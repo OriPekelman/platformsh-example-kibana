@@ -1,0 +1,24 @@
+name: kibana
+type: nodejs:6.9
+relationships:
+    search: 'es:elasticsearch'
+web:
+  commands:
+    start: "cd kibana;node src/cli"
+    #in this setup you will find your application stdout and stderr in /app/run/logs
+  locations:
+    "/public":
+      passthru: false
+      root: "public"
+      # Whether to allow files not matching a rule or not.
+      allow: true
+      rules:
+        '\.png$':
+          allow: true
+          expires: -1
+mounts:
+  "/run": "shared:files/run"
+  "/kibana/data": "shared:files/data"
+  "/kibana/optimize": "shared:files/optimize"
+
+disk: 512

@@ -1,4 +1,3 @@
-KIBANA_HOME="/app/kibana/"
-ELASTICSEARCH_URL="http://search.internal:9200"
-SERVER_PORT=8888
-
+export KIBANA_HOME="/app/kibana/"
+export ELASTICSEARCH_URL="http://search.internal:9200"
+export SERVER_PORT=8888

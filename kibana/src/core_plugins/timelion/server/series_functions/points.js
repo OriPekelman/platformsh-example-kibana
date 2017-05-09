@@ -1,20 +1,10 @@
 'use strict';
 
-var _alter = require('../lib/alter.js');
+var alter = require('../lib/alter.js');
+var _ = require('lodash');
 
-var _alter2 = _interopRequireDefault(_alter);
-
-var _lodash = require('lodash');
-
-var _lodash2 = _interopRequireDefault(_lodash);
-
-var _chainable = require('../lib/classes/chainable');
-
-var _chainable2 = _interopRequireDefault(_chainable);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-module.exports = new _chainable2.default('points', {
+var Chainable = require('../lib/classes/chainable');
+module.exports = new Chainable('points', {
   args: [{
     name: 'inputSeries',
     types: ['seriesList']
@@ -45,7 +35,7 @@ module.exports = new _chainable2.default('points', {
   }],
   help: 'Show the series as points',
   fn: function pointsFn(args) {
-    return (0, _alter2.default)(args, function (eachSeries, radius, weight, fill, fillColor, symbol, show) {
+    return alter(args, function (eachSeries, radius, weight, fill, fillColor, symbol, show) {
       eachSeries.points = eachSeries.points || {};
       eachSeries.points.radius = radius == null ? undefined : radius;
 
@@ -62,8 +52,8 @@ module.exports = new _chainable2.default('points', {
       }
 
       symbol = symbol || 'circle';
-      const validSymbols = ['triangle', 'cross', 'square', 'diamond', 'circle'];
-      if (!_lodash2.default.contains(['triangle', 'cross', 'square', 'diamond', 'circle'], symbol)) {
+      var validSymbols = ['triangle', 'cross', 'square', 'diamond', 'circle'];
+      if (!_.contains(['triangle', 'cross', 'square', 'diamond', 'circle'], symbol)) {
         throw new Error('Valid symbols are: ' + validSymbols.join(', '));
       }
 

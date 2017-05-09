@@ -1,9 +1,9 @@
 import _ from 'lodash';
 import $ from 'jquery';
 import uiModules from 'ui/modules';
-const module = uiModules.get('kibana');
+let module = uiModules.get('kibana');
 
-const html = '<span class="dropzone" ng-transclude></span>';
+let html = '<span class="dropzone" ng-transclude></span>';
 
 module.directive('fileUpload', function () {
   return {
@@ -16,17 +16,17 @@ module.directive('fileUpload', function () {
     },
     template: html,
     link: function ($scope, $elem, attrs) {
-      const $button = $elem.find($scope.uploadSelector);
-      const $dropzone = $elem.find('.dropzone');
+      let $button = $elem.find($scope.uploadSelector);
+      let $dropzone = $elem.find('.dropzone');
 
       const handleFile = (file) => {
         if (_.isUndefined(file)) return;
 
         if (_.has(attrs, 'onRead')) {
-          const reader = new FileReader();
+          let reader = new FileReader();
           reader.onload = function (e) {
             $scope.$apply(function () {
-              $scope.onRead({ fileContents: e.target.result });
+              $scope.onRead({fileContents: e.target.result});
             });
           };
           reader.readAsText(file);
@@ -66,13 +66,13 @@ module.directive('fileUpload', function () {
         $elem.append($fileInput);
 
         $fileInput.on('change', function (e) {
-          const target = e.srcElement || e.target;
+          let target = e.srcElement || e.target;
           if (_.get(target, 'files.length')) {
             handleFile(target.files[0]);
           }
         });
 
-        $button.on('click', function () {
+        $button.on('click', function (e) {
           $fileInput.val(null);
           $fileInput.trigger('click');
         });

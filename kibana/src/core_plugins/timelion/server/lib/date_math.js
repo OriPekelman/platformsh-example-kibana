@@ -1,36 +1,29 @@
 'use strict';
 
-var _lodash = require('lodash');
+var _ = require('lodash');
+var moment = require('moment');
 
-var _lodash2 = _interopRequireDefault(_lodash);
-
-var _moment = require('moment');
-
-var _moment2 = _interopRequireDefault(_moment);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-const units = ['y', 'M', 'w', 'd', 'h', 'm', 's'];
+var units = ['y', 'M', 'w', 'd', 'h', 'm', 's'];
 
 /* This is a simplified version of elasticsearch's date parser */
 function parse(text, roundUp) {
   if (!text) {
     return undefined;
   }
-  if (_moment2.default.isMoment(text)) {
+  if (moment.isMoment(text)) {
     return text;
   }
-  if (_lodash2.default.isDate(text)) {
-    return (0, _moment2.default)(text);
+  if (_.isDate(text)) {
+    return moment(text);
   }
 
-  let time;
-  let mathString = '';
-  let index;
-  let parseString;
+  var time;
+  var mathString = '';
+  var index;
+  var parseString;
 
   if (text.substring(0, 3) === 'now') {
-    time = (0, _moment2.default)();
+    time = moment();
     mathString = text.substring('now'.length);
   } else {
     index = text.indexOf('||');
@@ -38,11 +31,11 @@ function parse(text, roundUp) {
       parseString = text;
       mathString = ''; // nothing else
     } else {
-      parseString = text.substring(0, index);
-      mathString = text.substring(index + 2);
-    }
+        parseString = text.substring(0, index);
+        mathString = text.substring(index + 2);
+      }
     // We're going to just require ISO8601 timestamps, k?
-    time = (0, _moment2.default)(parseString);
+    time = moment(parseString);
   }
 
   if (!mathString.length) {
@@ -53,12 +46,13 @@ function parse(text, roundUp) {
 }
 
 function parseDateMath(mathString, time, roundUp) {
-  const dateTime = time;
+  var dateTime = time;
 
-  for (let i = 0; i < mathString.length;) {
-    const c = mathString.charAt(i++);
-    let type;
-    let num;
+  for (var i = 0; i < mathString.length;) {
+    var c = mathString.charAt(i++);
+    var type;
+    var num;
+    var unit;
 
     if (c === '/') {
       type = 0;
@@ -75,7 +69,7 @@ function parseDateMath(mathString, time, roundUp) {
     } else if (mathString.length === 2) {
       num = mathString.charAt(i);
     } else {
-      const numFrom = i;
+      var numFrom = i;
       while (!isNaN(mathString.charAt(i))) {
         i++;
         if (i > 10) {
@@ -91,9 +85,9 @@ function parseDateMath(mathString, time, roundUp) {
         return undefined;
       }
     }
-    const unit = mathString.charAt(i++);
+    unit = mathString.charAt(i++);
 
-    if (!_lodash2.default.contains(units, unit)) {
+    if (!_.contains(units, unit)) {
       return undefined;
     } else {
       if (type === 0) {

@@ -1,7 +1,9 @@
 import _ from 'lodash';
 
+import errors from 'ui/errors';
 import 'ui/es';
 import 'ui/promises';
+import 'ui/safe_confirm';
 import 'ui/index_patterns';
 import uiModules from 'ui/modules';
 import Notifier from 'ui/notify/notifier';
@@ -10,6 +12,7 @@ import DocSourceProvider from './data_source/doc_source';
 import SearchSourceProvider from './data_source/search_source';
 import SearchStrategyProvider from './fetch/strategy/search';
 import RequestQueueProvider from './_request_queue';
+import ErrorHandlersProvider from './_error_handlers';
 import FetchProvider from './fetch';
 import DocDataLooperProvider from './looper/doc_data';
 import DocAdminLooperProvider from './looper/doc_admin';
@@ -22,18 +25,19 @@ import RedirectWhenMissingProvider from './_redirect_when_missing';
 uiModules.get('kibana/courier')
 .service('courier', function ($rootScope, Private, Promise, indexPatterns) {
   function Courier() {
-    const self = this;
+    let self = this;
 
-    const DocSource = Private(DocSourceProvider);
-    const SearchSource = Private(SearchSourceProvider);
-    const searchStrategy = Private(SearchStrategyProvider);
+    let DocSource = Private(DocSourceProvider);
+    let SearchSource = Private(SearchSourceProvider);
+    let searchStrategy = Private(SearchStrategyProvider);
 
-    const requestQueue = Private(RequestQueueProvider);
+    let requestQueue = Private(RequestQueueProvider);
+    let errorHandlers = Private(ErrorHandlersProvider);
 
-    const fetch = Private(FetchProvider);
-    const docDataLooper = self.docLooper = Private(DocDataLooperProvider);
-    const docAdminLooper = self.docLooper = Private(DocAdminLooperProvider);
-    const searchLooper = self.searchLooper = Private(SearchLooperProvider);
+    let fetch = Private(FetchProvider);
+    let docDataLooper = self.docLooper = Private(DocDataLooperProvider);
+    let docAdminLooper = self.docLooper = Private(DocAdminLooperProvider);
+    let searchLooper = self.searchLooper = Private(SearchLooperProvider);
 
     // expose some internal modules
     self.setRootSearchSource = Private(RootSearchSourceProvider).set;
@@ -44,6 +48,8 @@ uiModules.get('kibana/courier')
 
     self.DocSource = DocSource;
     self.SearchSource = SearchSource;
+
+    let HastyRefresh = errors.HastyRefresh;
 
     /**
      * update the time between automatic search requests
@@ -133,8 +139,8 @@ uiModules.get('kibana/courier')
 
     // Listen for refreshInterval changes
     $rootScope.$watchCollection('timefilter.refreshInterval', function () {
-      const refreshValue = _.get($rootScope, 'timefilter.refreshInterval.value');
-      const refreshPause = _.get($rootScope, 'timefilter.refreshInterval.pause');
+      let refreshValue = _.get($rootScope, 'timefilter.refreshInterval.value');
+      let refreshPause = _.get($rootScope, 'timefilter.refreshInterval.pause');
       if (_.isNumber(refreshValue) && !refreshPause) {
         self.fetchInterval(refreshValue);
       } else {
@@ -142,7 +148,7 @@ uiModules.get('kibana/courier')
       }
     });
 
-    const onFatalDefer = Promise.defer();
+    let onFatalDefer = Promise.defer();
     onFatalDefer.promise.then(self.close);
     Notifier.fatalCallbacks.push(onFatalDefer.resolve);
   }

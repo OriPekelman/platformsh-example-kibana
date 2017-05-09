@@ -1,20 +1,20 @@
-import _ from 'lodash';
+var _ = require('lodash');
 require('ui/state_management/app_state');
 
 
 module.exports = function dashboardContext(Private, getAppState) {
   return function () {
-    const queryFilter = Private(require('ui/filter_bar/query_filter'));
-    const bool = { must: [], must_not: [] };
-    const filterBarFilters = queryFilter.getFilters();
-    const queryBarFilter = getAppState().query;
+    var queryFilter = Private(require('ui/filter_bar/query_filter'));
+    var bool = {must: [], must_not: []};
+    var filterBarFilters = queryFilter.getFilters();
+    var queryBarFilter = getAppState().query;
 
     // Add the query bar filter, its handled differently.
     bool.must.push(queryBarFilter);
 
     // Add each of the filter bar filters
     _.each(filterBarFilters, function (filter) {
-      const esFilter = _.omit(filter, function (val, key) {
+      var esFilter = _.omit(filter, function (val, key) {
         if (key === 'meta' || key[0] === '$') return true;
         return false;
       });
@@ -27,6 +27,6 @@ module.exports = function dashboardContext(Private, getAppState) {
       }
     });
 
-    return { bool: bool };
+    return {bool: bool};
   };
 };

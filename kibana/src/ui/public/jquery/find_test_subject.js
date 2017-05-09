@@ -45,13 +45,13 @@ module.exports = function bindToJquery($) {
 
   function findTestSubject(...subjectSelectors) {
     let $els = $();
-    const $context = this;
+    let $context = this;
 
     subjectSelectors.forEach(function (selector) {
       $els = $els.add($context.find(testSubjSelector(selector)));
     });
 
     return $els;
-  }
+  };
 
 };

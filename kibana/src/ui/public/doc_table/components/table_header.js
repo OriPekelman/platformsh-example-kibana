@@ -2,7 +2,7 @@ import _ from 'lodash';
 import 'ui/filters/short_dots';
 import headerHtml from 'ui/doc_table/components/table_header.html';
 import uiModules from 'ui/modules';
-const module = uiModules.get('app/discover');
+let module = uiModules.get('app/discover');
 
 
 module.directive('kbnTableHeader', function (shortDotsFilter) {
@@ -10,91 +10,69 @@ module.directive('kbnTableHeader', function (shortDotsFilter) {
     restrict: 'A',
     scope: {
       columns: '=',
-      sortOrder: '=',
+      sorting: '=',
       indexPattern: '=',
-      onChangeSortOrder: '=?',
-      onRemoveColumn: '=?',
-      onMoveColumn: '=?',
     },
     template: headerHtml,
     controller: function ($scope) {
-      const isSortableColumn = function isSortableColumn(columnName) {
-        return (
-          !!$scope.indexPattern
-          && _.isFunction($scope.onChangeSortOrder)
-          && _.get($scope, ['indexPattern', 'fields', 'byName', columnName, 'sortable'], false)
-        );
+
+      let sortableField = function (field) {
+        if (!$scope.indexPattern) return;
+        let sortable = _.get($scope.indexPattern.fields.byName[field], 'sortable');
+        return sortable;
       };
 
       $scope.tooltip = function (column) {
-        if (!isSortableColumn(column)) return '';
+        if (!sortableField(column)) return '';
         return 'Sort by ' + shortDotsFilter(column);
       };
 
-      $scope.canMoveColumnLeft = function canMoveColumn(columnName) {
-        return (
-          _.isFunction($scope.onMoveColumn)
-          && $scope.columns.indexOf(columnName) > 0
-        );
-      };
-
-      $scope.canMoveColumnRight = function canMoveColumn(columnName) {
-        return (
-          _.isFunction($scope.onMoveColumn)
-          && $scope.columns.indexOf(columnName) < $scope.columns.length - 1
-        );
-      };
-
-      $scope.canRemoveColumn = function canRemoveColumn(columnName) {
-        return (
-          _.isFunction($scope.onRemoveColumn)
-          && (columnName !== '_source' || $scope.columns.length > 1)
-        );
+      $scope.canRemove = function (name) {
+        return (name !== '_source' || $scope.columns.length !== 1);
       };
 
       $scope.headerClass = function (column) {
-        if (!isSortableColumn(column)) return;
+        if (!sortableField(column)) return;
 
-        const sortOrder = $scope.sortOrder;
-        const defaultClass = ['fa', 'fa-sort-up', 'table-header-sortchange'];
+        let sorting = $scope.sorting;
+        let defaultClass = ['fa', 'fa-sort-up', 'table-header-sortchange'];
 
-        if (!sortOrder || column !== sortOrder[0]) return defaultClass;
-        return ['fa', sortOrder[1] === 'asc' ? 'fa-sort-up' : 'fa-sort-down'];
+        if (!sorting || column !== sorting[0]) return defaultClass;
+        return ['fa', sorting[1] === 'asc' ? 'fa-sort-up' : 'fa-sort-down'];
       };
 
-      $scope.moveColumnLeft = function moveLeft(columnName) {
-        const newIndex = $scope.columns.indexOf(columnName) - 1;
+      $scope.moveLeft = function (column) {
+        let index = _.indexOf($scope.columns, column);
+        if (index === 0) return;
 
-        if (newIndex < 0) {
-          return;
-        }
-
-        $scope.onMoveColumn(columnName, newIndex);
+        _.move($scope.columns, index, --index);
       };
 
-      $scope.moveColumnRight = function moveRight(columnName) {
-        const newIndex = $scope.columns.indexOf(columnName) + 1;
+      $scope.moveRight = function (column) {
+        let index = _.indexOf($scope.columns, column);
+        if (index === $scope.columns.length - 1) return;
 
-        if (newIndex >= $scope.columns.length) {
-          return;
-        }
-
-        $scope.onMoveColumn(columnName, newIndex);
+        _.move($scope.columns, index, ++index);
       };
 
-      $scope.cycleSortOrder = function cycleSortOrder(columnName) {
-        if (!isSortableColumn(columnName)) {
-          return;
+      $scope.toggleColumn = function (fieldName) {
+        _.toggleInOut($scope.columns, fieldName);
+      };
+
+      $scope.sort = function (column) {
+        if (!column || !sortableField(column)) return;
+
+        let sorting = $scope.sorting = $scope.sorting || [];
+
+        let direction = sorting[1] || 'asc';
+        if (sorting[0] !== column) {
+          direction = 'asc';
+        } else {
+          direction = sorting[1] === 'asc' ? 'desc' : 'asc';
         }
 
-        const [currentColumnName, currentDirection = 'asc'] = $scope.sortOrder;
-        const newDirection = (
-          (columnName === currentColumnName && currentDirection === 'asc')
-          ? 'desc'
-          : 'asc'
-        );
-
-        $scope.onChangeSortOrder(columnName, newDirection);
+        $scope.sorting[0] = column;
+        $scope.sorting[1] = direction;
       };
     }
   };

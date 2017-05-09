@@ -1,21 +1,35 @@
 'use strict';
 
-Object.defineProperty(exports, "__esModule", {
+Object.defineProperty(exports, '__esModule', {
   value: true
 });
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-exports.default = function (kbnServer, server, config) {
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _fs = require('fs');
+
+var _url = require('url');
+
+var _elasticHttpolyglot = require('@elastic/httpolyglot');
+
+var _elasticHttpolyglot2 = _interopRequireDefault(_elasticHttpolyglot);
+
+var _tls_ciphers = require('./tls_ciphers');
+
+var _tls_ciphers2 = _interopRequireDefault(_tls_ciphers);
+
+exports['default'] = function (kbnServer, server, config) {
   // this mixin is used outside of the kbn server, so it MUST work without a full kbnServer object.
   kbnServer = null;
 
-  const host = config.get('server.host');
-  const port = config.get('server.port');
+  var host = config.get('server.host');
+  var port = config.get('server.port');
 
-  const connectionOptions = {
-    host,
-    port,
+  var connectionOptions = {
+    host: host,
+    port: port,
     state: {
       strictHeader: false
     },
@@ -27,7 +41,8 @@ exports.default = function (kbnServer, server, config) {
     }
   };
 
-  const useSsl = config.get('server.ssl.enabled');
+  // enable tlsOpts if ssl key and cert are defined
+  var useSsl = config.get('server.ssl.key') && config.get('server.ssl.cert');
 
   // not using https? well that's easy!
   if (!useSsl) {
@@ -37,16 +52,13 @@ exports.default = function (kbnServer, server, config) {
 
   server.connection(_extends({}, connectionOptions, {
     tls: true,
-    listener: _httpolyglot2.default.createServer({
+    listener: _elasticHttpolyglot2['default'].createServer({
       key: (0, _fs.readFileSync)(config.get('server.ssl.key')),
-      cert: (0, _fs.readFileSync)(config.get('server.ssl.certificate')),
-      ca: (0, _lodash.map)(config.get('server.ssl.certificateAuthorities'), _fs.readFileSync),
-      passphrase: config.get('server.ssl.keyPassphrase'),
+      cert: (0, _fs.readFileSync)(config.get('server.ssl.cert')),
 
-      ciphers: config.get('server.ssl.cipherSuites').join(':'),
+      ciphers: _tls_ciphers2['default'],
       // We use the server's cipher order rather than the client's to prevent the BEAST attack
-      honorCipherOrder: true,
-      secureOptions: (0, _secure_options2.default)(config.get('server.ssl.supportedProtocols'))
+      honorCipherOrder: true
     })
   }));
 
@@ -54,10 +66,10 @@ exports.default = function (kbnServer, server, config) {
     // A request sent through a HapiJS .inject() doesn't have a socket associated with the request
     // which causes a failure.
     if (!req.raw.req.socket || req.raw.req.socket.encrypted) {
-      reply.continue();
+      reply['continue']();
     } else {
       reply.redirect((0, _url.format)({
-        port,
+        port: port,
         protocol: 'https',
         hostname: host,
         pathname: req.url.pathname,
@@ -66,21 +78,5 @@ exports.default = function (kbnServer, server, config) {
     }
   });
 };
-
-var _fs = require('fs');
-
-var _url = require('url');
-
-var _httpolyglot = require('@elastic/httpolyglot');
-
-var _httpolyglot2 = _interopRequireDefault(_httpolyglot);
-
-var _lodash = require('lodash');
-
-var _secure_options = require('./secure_options');
-
-var _secure_options2 = _interopRequireDefault(_secure_options);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 module.exports = exports['default'];

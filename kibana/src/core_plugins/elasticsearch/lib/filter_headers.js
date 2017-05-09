@@ -1,11 +1,18 @@
 'use strict';
 
-Object.defineProperty(exports, "__esModule", {
+Object.defineProperty(exports, '__esModule', {
   value: true
 });
 
-exports.default = function (originalHeaders, headersToKeep) {
-  const normalizeHeader = function normalizeHeader(header) {
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _lodash = require('lodash');
+
+var _lodash2 = _interopRequireDefault(_lodash);
+
+exports['default'] = function (originalHeaders, headersToKeep) {
+
+  var normalizeHeader = function normalizeHeader(header) {
     if (!header) {
       return '';
     }
@@ -14,15 +21,14 @@ exports.default = function (originalHeaders, headersToKeep) {
   };
 
   // Normalize list of headers we want to allow in upstream request
-  const headersToKeepNormalized = headersToKeep.map(normalizeHeader);
+  var headersToKeepNormalized = headersToKeep.map(normalizeHeader);
 
-  return _lodash2.default.pick(originalHeaders, headersToKeepNormalized);
+  // Normalize original headers in request
+  var originalHeadersNormalized = _lodash2['default'].mapKeys(originalHeaders, function (headerValue, headerName) {
+    return normalizeHeader(headerName);
+  });
+
+  return _lodash2['default'].pick(originalHeaders, headersToKeepNormalized);
 };
-
-var _lodash = require('lodash');
-
-var _lodash2 = _interopRequireDefault(_lodash);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 module.exports = exports['default'];

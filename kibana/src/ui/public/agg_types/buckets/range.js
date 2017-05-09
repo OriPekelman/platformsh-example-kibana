@@ -1,16 +1,17 @@
+import _ from 'lodash';
 import AggTypesBucketsBucketAggTypeProvider from 'ui/agg_types/buckets/_bucket_agg_type';
 import AggTypesBucketsCreateFilterRangeProvider from 'ui/agg_types/buckets/create_filter/range';
 import IndexPatternsFieldFormatFieldFormatProvider from 'ui/index_patterns/_field_format/field_format';
 import RangeKeyProvider from './range_key';
 import rangesTemplate from 'ui/agg_types/controls/ranges.html';
 export default function RangeAggDefinition(Private) {
-  const BucketAggType = Private(AggTypesBucketsBucketAggTypeProvider);
-  const createFilter = Private(AggTypesBucketsCreateFilterRangeProvider);
-  const FieldFormat = Private(IndexPatternsFieldFormatFieldFormatProvider);
-  const RangeKey = Private(RangeKeyProvider);
+  let BucketAggType = Private(AggTypesBucketsBucketAggTypeProvider);
+  let createFilter = Private(AggTypesBucketsCreateFilterRangeProvider);
+  let FieldFormat = Private(IndexPatternsFieldFormatFieldFormatProvider);
+  let RangeKey = Private(RangeKeyProvider);
 
-  const keyCaches = new WeakMap();
-  const formats = new WeakMap();
+  let keyCaches = new WeakMap();
+  let formats = new WeakMap();
 
   return new BucketAggType({
     name: 'range',
@@ -27,7 +28,7 @@ export default function RangeAggDefinition(Private) {
         keyCaches.set(agg, keys);
       }
 
-      const id = RangeKey.idBucket(bucket);
+      let id = RangeKey.idBucket(bucket);
 
       key = keys.get(id);
       if (!key) {
@@ -41,8 +42,8 @@ export default function RangeAggDefinition(Private) {
       let format = formats.get(agg);
       if (format) return format;
 
-      const RangeFormat = FieldFormat.from(function (range) {
-        const format = agg.fieldOwnFormatter();
+      let RangeFormat = FieldFormat.from(function (range) {
+        let format = agg.fieldOwnFormatter();
         return `${format(range.gte)} to ${format(range.lt)}`;
       });
 
@@ -70,4 +71,4 @@ export default function RangeAggDefinition(Private) {
       }
     ]
   });
-}
+};

@@ -1,11 +1,17 @@
 import 'plugins/kibana/visualize/editor/agg_params';
 import 'plugins/kibana/visualize/editor/agg_add';
 import _ from 'lodash';
+import $ from 'jquery';
+import advancedToggleHtml from 'plugins/kibana/visualize/editor/advanced_toggle.html';
+import AggTypesIndexProvider from 'ui/agg_types/index';
 import uiModules from 'ui/modules';
 import aggTemplate from 'plugins/kibana/visualize/editor/agg.html';
 uiModules
 .get('app/visualize')
 .directive('visEditorAgg', function ($compile, $parse, $filter, Private, Notifier) {
+
+  const aggTypes = Private(AggTypesIndexProvider);
+
   const notify = new Notifier({
     location: 'visAggGroup'
   });
@@ -40,13 +46,13 @@ uiModules
         return label ? label : '';
       };
 
-      $scope.$on('drag-start', () => {
+      $scope.$on('drag-start', e => {
         $scope.editorWasOpen = $scope.editorOpen;
         $scope.editorOpen = false;
         $scope.$emit('agg-drag-start', $scope.agg);
       });
 
-      $scope.$on('drag-end', () => {
+      $scope.$on('drag-end', e => {
         $scope.editorOpen = $scope.editorWasOpen;
         $scope.$emit('agg-drag-end', $scope.agg);
       });

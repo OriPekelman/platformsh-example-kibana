@@ -30,7 +30,7 @@ export default function ResponseAggConfigProvider() {
       this.key = key;
       this.parentId = this.id;
 
-      const subId = String(key);
+      let subId = String(key);
       if (subId.indexOf('.') > -1) {
         this.id = this.parentId + '[\'' + subId.replace(/'/g, '\\\'') + '\']';
       } else {
@@ -46,4 +46,4 @@ export default function ResponseAggConfigProvider() {
 
     return ResponseAggConfig;
   }
-}
+};

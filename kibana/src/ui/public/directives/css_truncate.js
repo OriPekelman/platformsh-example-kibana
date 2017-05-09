@@ -1,7 +1,9 @@
+import $ from 'jquery';
+import _ from 'lodash';
 import uiModules from 'ui/modules';
-const module = uiModules.get('kibana');
+let module = uiModules.get('kibana');
 
-module.directive('cssTruncate', function () {
+module.directive('cssTruncate', function ($timeout) {
   return {
     restrict: 'A',
     scope: {},
@@ -19,7 +21,7 @@ module.directive('cssTruncate', function () {
           function () { return $elem.html(); },
           function () {
             if ($elem[0].offsetWidth < $elem[0].scrollWidth) {
-              $elem.css({ 'cursor': 'pointer' });
+              $elem.css({'cursor': 'pointer'});
               $elem.bind('click', function () {
                 $scope.toggle();
               });
@@ -30,9 +32,9 @@ module.directive('cssTruncate', function () {
 
       $scope.toggle = function () {
         if ($elem.css('white-space') !== 'normal') {
-          $elem.css({ 'white-space': 'normal' });
+          $elem.css({'white-space': 'normal'});
         } else {
-          $elem.css({ 'white-space': 'nowrap' });
+          $elem.css({'white-space': 'nowrap'});
         }
       };
 

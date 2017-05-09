@@ -1,11 +1,12 @@
-import _ from 'lodash';
+var _ = require('lodash');
+var $ = require('jquery');
 
 require('angular-sortable-view');
 require('plugins/timelion/directives/chart/chart');
 require('plugins/timelion/directives/timelion_grid');
 
-const app = require('ui/modules').get('apps/timelion', ['angular-sortable-view']);
-import html from './cells.html';
+var app = require('ui/modules').get('apps/timelion', ['angular-sortable-view']);
+var html = require('./cells.html');
 
 app.directive('timelionCells', function () {
   return {
@@ -18,7 +19,7 @@ app.directive('timelionCells', function () {
       onSelect: '=',
     },
     template: html,
-    link: function ($scope) {
+    link: function ($scope, $elem) {
 
       $scope.removeCell = function (index) {
         _.pullAt($scope.state.sheet, index);

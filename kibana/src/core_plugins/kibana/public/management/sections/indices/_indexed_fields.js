@@ -32,18 +32,15 @@ uiModules.get('apps/management')
         { title: 'controls', sortable: false }
       ];
 
-      $scope.$watchMulti(['[]indexPattern.fields', 'fieldFilter', 'indexedFieldTypeFilter'], refreshRows);
+      $scope.$watchMulti(['[]indexPattern.fields', 'fieldFilter'], refreshRows);
 
       function refreshRows() {
         // clear and destroy row scopes
         _.invoke(rowScopes.splice(0), '$destroy');
-        const fields = filter($scope.indexPattern.getNonScriptedFields(), {
-          name: $scope.fieldFilter,
-          type: $scope.indexedFieldTypeFilter
-        });
+        const fields = filter($scope.indexPattern.getNonScriptedFields(), $scope.fieldFilter);
         const sourceFilters = $scope.indexPattern.sourceFilters && $scope.indexPattern.sourceFilters.map(f => f.value) || [];
         const fieldWildcardMatch = fieldWildcardMatcher(sourceFilters);
-        _.find($scope.editSections, { index: 'indexedFields' }).count = fields.length; // Update the tab count
+        _.find($scope.editSections, {index: 'indexedFields'}).count = fields.length; // Update the tab count
 
         $scope.rows = fields.map(function (field) {
           const childScope = _.assign($scope.$new(), { field: field });
@@ -55,18 +52,12 @@ uiModules.get('apps/management')
             {
               markup: nameHtml,
               scope: childScope,
-              value: field.displayName,
-              attr: {
-                'data-test-subj': 'indexedFieldName'
-              }
+              value: field.displayName
             },
             {
               markup: typeHtml,
               scope: childScope,
-              value: field.type,
-              attr: {
-                'data-test-subj': 'indexedFieldType'
-              }
+              value: field.type
             },
             _.get($scope.indexPattern, ['fieldFormatMap', field.name, 'type', 'title']),
             {

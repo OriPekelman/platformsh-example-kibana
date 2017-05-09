@@ -2,12 +2,12 @@ import _ from 'lodash';
 import AggTypesMetricsMetricAggTypeProvider from 'ui/agg_types/metrics/metric_agg_type';
 import AggTypesMetricsGetResponseAggConfigClassProvider from 'ui/agg_types/metrics/get_response_agg_config_class';
 export default function AggTypeMetricStandardDeviationProvider(Private) {
-  const MetricAggType = Private(AggTypesMetricsMetricAggTypeProvider);
-  const getResponseAggConfigClass = Private(AggTypesMetricsGetResponseAggConfigClassProvider);
+  let MetricAggType = Private(AggTypesMetricsMetricAggTypeProvider);
+  let getResponseAggConfigClass = Private(AggTypesMetricsGetResponseAggConfigClassProvider);
 
-  const responseAggConfigProps = {
+  let responseAggConfigProps = {
     valProp: function () {
-      const details = this.keyedDetails(this.params.customLabel)[this.key];
+      let details = this.keyedDetails(this.params.customLabel)[this.key];
       return details.valProp;
     },
     makeLabel: function () {
@@ -45,7 +45,7 @@ export default function AggTypeMetricStandardDeviationProvider(Private) {
     ],
 
     getResponseAggs: function (agg) {
-      const ValueAggConfig = getResponseAggConfigClass(agg, responseAggConfigProps);
+      let ValueAggConfig = getResponseAggConfigClass(agg, responseAggConfigProps);
 
       return [
         new ValueAggConfig('std_lower'),
@@ -57,4 +57,4 @@ export default function AggTypeMetricStandardDeviationProvider(Private) {
       return _.get(bucket[agg.parentId], agg.valProp());
     }
   });
-}
+};

@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import angular from 'angular';
 import compareFilters from 'ui/filter_bar/lib/compare_filters';
 
 /**
@@ -16,4 +17,4 @@ export default function (existingFilters, filters, comparatorOptions) {
       return compareFilters(existingFilter, filter, comparatorOptions);
     });
   });
-}
+};

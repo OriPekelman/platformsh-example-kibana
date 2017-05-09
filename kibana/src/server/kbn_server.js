@@ -1,5 +1,13 @@
 'use strict';
 
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
 var _lodash = require('lodash');
 
 var _bluebird = require('bluebird');
@@ -8,116 +16,62 @@ var _cluster = require('cluster');
 
 var _utils = require('../utils');
 
-var _config = require('./config/config');
+var _configConfig = require('./config/config');
 
-var _config2 = _interopRequireDefault(_config);
+var _configConfig2 = _interopRequireDefault(_configConfig);
 
-var _configuration = require('./logging/configuration');
+var _loggingConfiguration = require('./logging/configuration');
 
-var _configuration2 = _interopRequireDefault(_configuration);
+var _loggingConfiguration2 = _interopRequireDefault(_loggingConfiguration);
 
-var _setup = require('./config/setup');
+var rootDir = (0, _utils.fromRoot)('.');
 
-var _setup2 = _interopRequireDefault(_setup);
+module.exports = (function () {
+  function KbnServer(settings) {
+    var _this = this;
 
-var _http = require('./http');
+    _classCallCheck(this, KbnServer);
 
-var _http2 = _interopRequireDefault(_http);
-
-var _logging = require('./logging');
-
-var _logging2 = _interopRequireDefault(_logging);
-
-var _warnings = require('./warnings');
-
-var _warnings2 = _interopRequireDefault(_warnings);
-
-var _status = require('./status');
-
-var _status2 = _interopRequireDefault(_status);
-
-var _pid = require('./pid');
-
-var _pid2 = _interopRequireDefault(_pid);
-
-var _scan = require('./plugins/scan');
-
-var _scan2 = _interopRequireDefault(_scan);
-
-var _check_enabled = require('./plugins/check_enabled');
-
-var _check_enabled2 = _interopRequireDefault(_check_enabled);
-
-var _check_version = require('./plugins/check_version');
-
-var _check_version2 = _interopRequireDefault(_check_version);
-
-var _complete = require('./config/complete');
-
-var _complete2 = _interopRequireDefault(_complete);
-
-var _ui = require('../ui');
-
-var _ui2 = _interopRequireDefault(_ui);
-
-var _settings = require('../ui/settings');
-
-var _settings2 = _interopRequireDefault(_settings);
-
-var _optimize = require('../optimize');
-
-var _optimize2 = _interopRequireDefault(_optimize);
-
-var _initialize = require('./plugins/initialize');
-
-var _initialize2 = _interopRequireDefault(_initialize);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
-
-const rootDir = (0, _utils.fromRoot)('.');
-
-module.exports = class KbnServer {
-  constructor(settings) {
     this.name = _utils.pkg.name;
     this.version = _utils.pkg.version;
     this.build = _utils.pkg.build || false;
     this.rootDir = rootDir;
     this.settings = settings || {};
 
-    this.ready = (0, _lodash.constant)(this.mixin(
-    // sets this.config, reads this.settings
-    _setup2.default,
-    // sets this.server
-    _http2.default, _logging2.default, _warnings2.default, _status2.default,
+    this.ready = (0, _lodash.constant)(this.mixin(require('./config/setup'), // sets this.config, reads this.settings
+    require('./http'), // sets this.server
+    require('./logging'), require('./warnings'), require('./status'),
+
     // writes pid file
-    _pid2.default,
+    require('./pid'),
+
     // find plugins and set this.plugins
-    _scan2.default,
+    require('./plugins/scan'),
 
     // disable the plugins that are disabled through configuration
-    _check_enabled2.default,
+    require('./plugins/check_enabled'),
 
     // disable the plugins that are incompatible with the current version of Kibana
-    _check_version2.default,
+    require('./plugins/check_version'),
 
     // tell the config we are done loading plugins
-    _complete2.default,
+    require('./config/complete'),
+
     // setup this.uiExports and this.bundles
-    _ui2.default,
+    require('../ui'),
 
     // setup server.uiSettings
-    _settings2.default,
+    require('../ui/settings'),
 
     // ensure that all bundles are built, or that the
     // lazy bundle server is running
-    _optimize2.default,
+    require('../optimize'),
+
     // finally, initialize the plugins
-    _initialize2.default, () => {
-      if (this.config.get('server.autoListen')) {
-        this.ready = (0, _lodash.constant)((0, _bluebird.resolve)());
-        return this.listen();
+    require('./plugins/initialize'), function () {
+      if (_this.config.get('server.autoListen')) {
+        _this.ready = (0, _lodash.constant)((0, _bluebird.resolve)());
+        return _this.listen();
       }
     }));
 
@@ -134,27 +88,31 @@ module.exports = class KbnServer {
    *                         and can return a promise to delay execution of the next mixin
    * @return {Promise} - promise that is resolved when the final mixin completes.
    */
-  mixin(...fns) {
-    var _this = this;
 
-    return _asyncToGenerator(function* () {
+  _createClass(KbnServer, [{
+    key: 'mixin',
+    value: _asyncToGenerator(function* () {
       var _iteratorNormalCompletion = true;
       var _didIteratorError = false;
       var _iteratorError = undefined;
 
       try {
-        for (var _iterator = (0, _lodash.compact)((0, _lodash.flatten)(fns))[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-          const fn = _step.value;
+        for (var _len = arguments.length, fns = Array(_len), _key = 0; _key < _len; _key++) {
+          fns[_key] = arguments[_key];
+        }
 
-          yield fn.call(_this, _this, _this.server, _this.config);
+        for (var _iterator = (0, _lodash.compact)((0, _lodash.flatten)(fns))[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          var fn = _step.value;
+
+          yield fn.call(this, this, this.server, this.config);
         }
       } catch (err) {
         _didIteratorError = true;
         _iteratorError = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion && _iterator.return) {
-            _iterator.return();
+          if (!_iteratorNormalCompletion && _iterator['return']) {
+            _iterator['return']();
           }
         } finally {
           if (_didIteratorError) {
@@ -162,23 +120,21 @@ module.exports = class KbnServer {
           }
         }
       }
-    })();
-  }
+    })
 
-  /**
-   * Tell the server to listen for incoming requests, or get
-   * a promise that will be resolved once the server is listening.
-   *
-   * @return undefined
-   */
-  listen() {
-    var _this2 = this;
+    /**
+     * Tell the server to listen for incoming requests, or get
+     * a promise that will be resolved once the server is listening.
+     *
+     * @return undefined
+     */
+  }, {
+    key: 'listen',
+    value: _asyncToGenerator(function* () {
+      var server = this.server;
+      var config = this.config;
 
-    return _asyncToGenerator(function* () {
-      const server = _this2.server;
-
-
-      yield _this2.ready();
+      yield this.ready();
       yield (0, _bluebird.fromNode)(function (cb) {
         return server.start(cb);
       });
@@ -188,48 +144,49 @@ module.exports = class KbnServer {
         process.send(['WORKER_LISTENING']);
       }
 
-      server.log(['listening', 'info'], `Server running at ${server.info.uri}`);
+      server.log(['listening', 'info'], 'Server running at ' + server.info.uri);
       return server;
-    })();
-  }
+    })
+  }, {
+    key: 'close',
+    value: _asyncToGenerator(function* () {
+      var _this2 = this;
 
-  close() {
-    var _this3 = this;
-
-    return _asyncToGenerator(function* () {
       yield (0, _bluebird.fromNode)(function (cb) {
-        return _this3.server.stop(cb);
+        return _this2.server.stop(cb);
       });
-    })();
-  }
+    })
+  }, {
+    key: 'inject',
+    value: _asyncToGenerator(function* (opts) {
+      var _this3 = this;
 
-  inject(opts) {
-    var _this4 = this;
-
-    return _asyncToGenerator(function* () {
-      if (!_this4.server) yield _this4.ready();
+      if (!this.server) yield this.ready();
 
       return yield (0, _bluebird.fromNode)(function (cb) {
         try {
-          _this4.server.inject(opts, function (resp) {
+          _this3.server.inject(opts, function (resp) {
             cb(null, resp);
           });
         } catch (err) {
           cb(err);
         }
       });
-    })();
-  }
+    })
+  }, {
+    key: 'applyLoggingConfiguration',
+    value: function applyLoggingConfiguration(settings) {
+      var config = _configConfig2['default'].withDefaultSchema(settings);
+      var loggingOptions = (0, _loggingConfiguration2['default'])(config);
+      var subset = {
+        ops: config.get('ops'),
+        logging: config.get('logging')
+      };
+      var plain = JSON.stringify(subset, null, 2);
+      this.server.log(['info', 'config'], 'New logging configuration:\n' + plain);
+      this.server.plugins['even-better'].monitor.reconfigure(loggingOptions);
+    }
+  }]);
 
-  applyLoggingConfiguration(settings) {
-    const config = _config2.default.withDefaultSchema(settings);
-    const loggingOptions = (0, _configuration2.default)(config);
-    const subset = {
-      ops: config.get('ops'),
-      logging: config.get('logging')
-    };
-    const plain = JSON.stringify(subset, null, 2);
-    this.server.log(['info', 'config'], 'New logging configuration:\n' + plain);
-    this.server.plugins['even-better'].monitor.reconfigure(loggingOptions);
-  }
-};
+  return KbnServer;
+})();

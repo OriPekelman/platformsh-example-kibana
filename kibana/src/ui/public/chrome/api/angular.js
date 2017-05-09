@@ -5,16 +5,14 @@ import modules from 'ui/modules';
 import Notifier from 'ui/notify/notifier';
 import { UrlOverflowServiceProvider } from '../../error_url_overflow';
 
-import directivesProvider from '../directives';
-
 const URL_LIMIT_WARN_WITHIN = 1000;
 
-export default function (chrome, internals) {
+module.exports = function (chrome, internals) {
   chrome.getFirstPathSegment = _.noop;
   chrome.getBreadcrumbs = _.noop;
 
   chrome.setupAngular = function () {
-    const kibana = modules.get('kibana');
+    let kibana = modules.get('kibana');
 
     _.forOwn(chrome.getInjected(), function (val, name) {
       kibana.value(name, val);
@@ -29,7 +27,7 @@ export default function (chrome, internals) {
     .value('sessionId', Date.now())
     .value('chrome', chrome)
     .value('esUrl', (function () {
-      const a = document.createElement('a');
+      let a = document.createElement('a');
       a.href = chrome.addBasePath('/elasticsearch');
       return a.href;
     }()))
@@ -44,13 +42,13 @@ export default function (chrome, internals) {
         $compileProvider.debugInfoEnabled(false);
       }
     }])
-    .run(($location, $rootScope, Private, config) => {
+    .run(($location, $rootScope, Private) => {
       chrome.getFirstPathSegment = () => {
         return $location.path().split('/')[1];
       };
 
       chrome.getBreadcrumbs = () => {
-        const path = $location.path();
+        let path = $location.path();
         let length = path.length - 1;
 
         // trim trailing slash
@@ -59,14 +57,13 @@ export default function (chrome, internals) {
         }
 
         return path.substr(1, length)
+          .replace(/_/g, ' ') // Present snake-cased breadcrumb names as individual words
           .split('/');
       };
 
       const notify = new Notifier();
       const urlOverflow = Private(UrlOverflowServiceProvider);
-      const check = () => {
-        // disable long url checks when storing state in session storage
-        if (config.get('state:storeInSessionStorage')) return;
+      const check = (event) => {
         if ($location.path() === '/error/url-overflow') return;
 
         try {
@@ -98,9 +95,9 @@ export default function (chrome, internals) {
       $rootScope.$on('$routeChangeStart', check);
     });
 
-    directivesProvider(chrome, internals);
+    require('../directives')(chrome, internals);
 
     modules.link(kibana);
   };
 
-}
+};

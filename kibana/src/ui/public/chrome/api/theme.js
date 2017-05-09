@@ -81,8 +81,8 @@ module.exports = function (chrome, internals) {
    * @return {chrome}
    */
   chrome.removeApplicationClass = function (val) {
-    const classesToRemove = [].concat(val || []);
-    const classes = internals.applicationClasses || [];
+    let classesToRemove = [].concat(val || []);
+    let classes = internals.applicationClasses || [];
     _.pull(classes, ...classesToRemove);
 
     internals.applicationClasses = classes;

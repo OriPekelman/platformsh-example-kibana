@@ -1,10 +1,10 @@
 import moment from 'moment';
 import buildRangeFilter from 'ui/filter_manager/lib/range';
-export default function createDateHistogramFilterProvider() {
+export default function createDateHistogramFilterProvider(Private) {
 
   return function (agg, key) {
-    const start = moment(key);
-    const interval = agg.buckets.getInterval();
+    let start = moment(key);
+    let interval = agg.buckets.getInterval();
 
     return buildRangeFilter(agg.params.field, {
       gte: start.valueOf(),
@@ -13,4 +13,4 @@ export default function createDateHistogramFilterProvider() {
     }, agg.vis.indexPattern);
   };
 
-}
+};

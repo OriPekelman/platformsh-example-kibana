@@ -5,10 +5,10 @@ export default function PointSeriesGetPoint() {
   }
 
   return function getPoint(x, series, yScale, row, y, z) {
-    const zRow = z && row[z.i];
-    const xRow = row[x.i];
+    let zRow = z && row[z.i];
+    let xRow = row[x.i];
 
-    const point = {
+    let point = {
       x: unwrap(xRow, '_all'),
       xi: xRow && xRow.$order,
       y: unwrap(row[y.i]),
@@ -40,4 +40,4 @@ export default function PointSeriesGetPoint() {
 
     return point;
   };
-}
+};

@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import VislibComponentsZeroInjectionOrderedXKeysProvider from './ordered_x_keys';
 import VislibComponentsZeroInjectionZeroFilledArrayProvider from './zero_filled_array';
 import VislibComponentsZeroInjectionZeroFillDataArrayProvider from './zero_fill_data_array';
@@ -28,4 +29,4 @@ export default function ZeroInjectionUtilService(Private) {
 
     return obj;
   };
-}
+};

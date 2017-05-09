@@ -6,7 +6,7 @@ import findByParam from 'ui/utils/find_by_param';
 export default function (Notifier) {
   return function ($state) {
     return function (event, simulate) {
-      const notify = new Notifier({
+      let notify = new Notifier({
         location: 'Filter bar'
       });
       let aggConfigResult;
@@ -23,14 +23,14 @@ export default function (Notifier) {
       }
 
       if (aggConfigResult) {
-        const isLegendLabel = !!event.point.values;
+        let isLegendLabel = !!event.point.values;
         let aggBuckets = _.filter(aggConfigResult.getPath(), { type: 'bucket' });
 
         // For legend clicks, use the last bucket in the path
         if (isLegendLabel) {
           // series data has multiple values, use aggConfig on the first
           // hierarchical data values is an object with the addConfig
-          const aggConfig = findByParam(event.point.values, 'aggConfig');
+          let aggConfig = findByParam(event.point.values, 'aggConfig');
           aggBuckets = aggBuckets.filter((result) => result.aggConfig && result.aggConfig === aggConfig);
         }
 
@@ -56,7 +56,7 @@ export default function (Notifier) {
           });
         }
 
-        filters = dedupFilters($state.filters, uniqFilters(filters), { negate: true });
+        filters = dedupFilters($state.filters, uniqFilters(filters));
         // We need to add a bunch of filter deduping here.
         if (!simulate) {
           $state.$newFilters = filters;
@@ -66,4 +66,4 @@ export default function (Notifier) {
       }
     };
   };
-}
+};

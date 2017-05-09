@@ -13,9 +13,7 @@ docViewsRegistry.register(function () {
         hit: '=',
         indexPattern: '=',
         filter: '=',
-        columns: '=',
-        onAddColumn: '=',
-        onRemoveColumn: '=',
+        columns: '='
       },
       controller: function ($scope) {
         $scope.mapping = $scope.indexPattern.fields.byName;
@@ -23,23 +21,12 @@ docViewsRegistry.register(function () {
         $scope.formatted = $scope.indexPattern.formatHit($scope.hit);
         $scope.fields = _.keys($scope.flattened).sort();
 
-        $scope.canToggleColumns = function canToggleColumn() {
-          return (
-            _.isFunction($scope.onAddColumn)
-            && _.isFunction($scope.onRemoveColumn)
-          );
-        };
-
-        $scope.toggleColumn = function toggleColumn(columnName) {
-          if ($scope.columns.includes(columnName)) {
-            $scope.onRemoveColumn(columnName);
-          } else {
-            $scope.onAddColumn(columnName);
-          }
+        $scope.toggleColumn = function (fieldName) {
+          _.toggleInOut($scope.columns, fieldName);
         };
 
         $scope.showArrayInObjectsWarning = function (row, field) {
-          const value = $scope.flattened[field];
+          let value = $scope.flattened[field];
           return _.isArray(value) && typeof value[0] === 'object';
         };
       }

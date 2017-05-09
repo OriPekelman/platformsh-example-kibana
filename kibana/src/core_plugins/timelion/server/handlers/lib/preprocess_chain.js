@@ -1,17 +1,13 @@
 'use strict';
 
-var _lodash = require('lodash');
-
-var _lodash2 = _interopRequireDefault(_lodash);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+var _ = require('lodash');
 
 module.exports = function preProcessChainFn(tlConfig) {
   return function preProcessChain(chain, queries) {
     queries = queries || {};
     function validateAndStore(item) {
-      if (_lodash2.default.isObject(item) && item.type === 'function') {
-        const functionDef = tlConfig.server.plugins.timelion.getFunction(item.function);
+      if (_.isObject(item) && item.type === 'function') {
+        var functionDef = tlConfig.server.plugins.timelion.getFunction(item['function']);
 
         if (functionDef.datasource) {
           queries[functionDef.cacheKey(item)] = item;
@@ -26,10 +22,10 @@ module.exports = function preProcessChainFn(tlConfig) {
       return;
     }
 
-    if (!_lodash2.default.isArray(chain)) return;
+    if (!_.isArray(chain)) return;
 
-    _lodash2.default.each(chain, function (operator) {
-      if (!_lodash2.default.isObject(operator)) {
+    _.each(chain, function (operator) {
+      if (!_.isObject(operator)) {
         return;
       }
       switch (operator.type) {

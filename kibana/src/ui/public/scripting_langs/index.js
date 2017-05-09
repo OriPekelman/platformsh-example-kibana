@@ -1,5 +1,6 @@
 import chrome from 'ui/chrome';
 import Notifier from 'ui/notify/notifier';
+import { intersection } from 'lodash';
 
 const notify = new Notifier({ location: 'Scripting Lang Service' });
 

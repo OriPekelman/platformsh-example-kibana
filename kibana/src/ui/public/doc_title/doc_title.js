@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import chrome from 'ui/chrome';
 import uiModules from 'ui/modules';
 
 uiModules.get('kibana')
@@ -8,16 +9,16 @@ uiModules.get('kibana')
   $rootScope.$on('$routeChangeError', docTitle.update);
   $rootScope.$on('$routeChangeSuccess', docTitle.update);
 })
-.service('docTitle', function () {
-  const baseTitle = document.title;
-  const self = this;
+.service('docTitle', function ($rootScope) {
+  let baseTitle = document.title;
+  let self = this;
 
   let lastChange;
 
   function render() {
     lastChange = lastChange || [];
 
-    const parts = [lastChange[0]];
+    let parts = [lastChange[0]];
 
     if (!lastChange[1]) parts.push(baseTitle);
 
@@ -41,4 +42,4 @@ uiModules.get('kibana')
 // return a "private module" so that it can be used both ways
 export default function DoctitleProvider(docTitle) {
   return docTitle;
-}
+};

@@ -11,11 +11,10 @@ export default function TypeFactory(Private) {
    */
   return {
     histogram: pointSeries.column,
-    horizontal_bar: pointSeries.column,
     line: pointSeries.line,
     pie: Private(VislibLibTypesPieProvider),
     area: pointSeries.area,
     point_series: pointSeries.line,
     heatmap: pointSeries.heatmap,
   };
-}
+};

@@ -10,16 +10,16 @@
     "dashboards",
     "dashboarding"
   ],
-  "version": "5.4.0",
+  "version": "5.2.2",
   "build": {
-    "number": 15063,
-    "sha": "75afc9fbb024df55fa01acd1a4c2f76d44961746"
+    "number": 14723,
+    "sha": "6538112a1d244727704f4f11d152113a5133e871"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/elastic/kibana.git"
   },
   "engines": {
-    "node": "6.10.2"
+    "node": "6.9.5"
   }
 }

@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import d3 from 'd3';
 import Binder from 'ui/binder';
-import { KbnError } from 'ui/errors';
+import errors from 'ui/errors';
 import EventsProvider from 'ui/events';
 import './styles/main.less';
 import VislibLibResizeCheckerProvider from './lib/resize_checker';
@@ -70,7 +70,7 @@ export default function VisFactory(Private) {
 
       this.handler = new Handler(this, this.visConfig);
       this._runWithoutResizeChecker('render');
-    }
+    };
 
     getLegendLabels() {
       return this.visConfig ? this.visConfig.get('legend.labels', null) : null;
@@ -95,7 +95,7 @@ export default function VisFactory(Private) {
       } else {
         this.render(this.data, this.uiState);
       }
-    }
+    };
 
     _runWithoutResizeChecker(method) {
       this.resizeChecker.stopSchedule();
@@ -103,21 +103,21 @@ export default function VisFactory(Private) {
       this.resizeChecker.saveSize();
       this.resizeChecker.saveDirty(false);
       this.resizeChecker.continueSchedule();
-    }
+    };
 
     _runOnHandler(method) {
       try {
         this.handler[method]();
       } catch (error) {
 
-        if (error instanceof KbnError) {
+        if (error instanceof errors.KbnError) {
           error.displayToScreen(this.handler);
         } else {
           throw error;
         }
 
       }
-    }
+    };
 
     /**
      * Destroys the visualization
@@ -136,7 +136,7 @@ export default function VisFactory(Private) {
       if (this.handler) this._runOnHandler('destroy');
 
       selection.remove();
-    }
+    };
 
     /**
      * Sets attributes on the visualization
@@ -148,7 +148,7 @@ export default function VisFactory(Private) {
     set(name, val) {
       this.visConfigArgs[name] = val;
       this.render(this.data, this.uiState);
-    }
+    };
 
     /**
      * Gets attributes from the visualization
@@ -159,7 +159,7 @@ export default function VisFactory(Private) {
      */
     get(name) {
       return this.visConfig.get(name);
-    }
+    };
 
     /**
      * Turns on event listeners.
@@ -178,7 +178,7 @@ export default function VisFactory(Private) {
       if (first && added && this.handler) this.handler.enable(event);
 
       return ret;
-    }
+    };
 
     /**
      * Turns off event listeners.
@@ -195,8 +195,8 @@ export default function VisFactory(Private) {
       // Once all listeners are removed, disable the events in the handler
       if (last && removed && this.handler) this.handler.disable(event);
       return ret;
-    }
+    };
   }
 
   return Vis;
-}
+};

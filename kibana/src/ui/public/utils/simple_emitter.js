@@ -68,7 +68,7 @@ SimpleEmitter.prototype.removeAllListeners = function () {
  */
 SimpleEmitter.prototype.emit = _.restParam(function (name, args) {
   if (!this._listeners[name]) return this;
-  const listeners = this.listeners(name);
+  let listeners = this.listeners(name);
   let i = -1;
 
   while (++i < listeners.length) {

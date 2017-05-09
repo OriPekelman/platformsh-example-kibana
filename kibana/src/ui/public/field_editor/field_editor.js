@@ -6,6 +6,7 @@ import RegistryFieldFormatsProvider from 'ui/registry/field_formats';
 import IndexPatternsFieldProvider from 'ui/index_patterns/_field';
 import uiModules from 'ui/modules';
 import fieldEditorTemplate from 'ui/field_editor/field_editor.html';
+import chrome from 'ui/chrome';
 import IndexPatternsCastMappingTypeProvider from 'ui/index_patterns/_cast_mapping_type';
 import { scriptedFields as docLinks } from '../documentation_links/documentation_links';
 import './field_editor.less';
@@ -13,10 +14,10 @@ import { GetEnabledScriptingLangsProvider, getSupportedScriptingLangs } from '..
 
 uiModules
 .get('kibana', ['colorpicker.module'])
-.directive('fieldEditor', function (Private, $sce, confirmModal) {
-  const fieldFormats = Private(RegistryFieldFormatsProvider);
-  const Field = Private(IndexPatternsFieldProvider);
-  const getEnabledScriptingLangs = Private(GetEnabledScriptingLangsProvider);
+.directive('fieldEditor', function (Private, $sce) {
+  let fieldFormats = Private(RegistryFieldFormatsProvider);
+  let Field = Private(IndexPatternsFieldProvider);
+  let getEnabledScriptingLangs = Private(GetEnabledScriptingLangsProvider);
 
   const fieldTypesByLang = {
     painless: ['number', 'string', 'date', 'boolean'],
@@ -32,9 +33,9 @@ uiModules
       getField: '&field'
     },
     controllerAs: 'editor',
-    controller: function ($scope, Notifier, kbnUrl) {
-      const self = this;
-      const notify = new Notifier({ location: 'Field Editor' });
+    controller: function ($scope, Notifier, kbnUrl, $http, $q) {
+      let self = this;
+      let notify = new Notifier({ location: 'Field Editor' });
 
       self.docLinks = docLinks;
       getEnabledScriptingLangs().then((langs) => {
@@ -51,15 +52,14 @@ uiModules
 
       // only init on first create
       self.creating = !self.indexPattern.fields.byName[self.field.name];
-      self.existingFieldNames = self.indexPattern.fields.map(field => field.name); //used for mapping conflict validation
       self.selectedFormatId = _.get(self.indexPattern, ['fieldFormatMap', self.field.name, 'type', 'id']);
       self.defFormatType = initDefaultFormat();
 
       self.cancel = redirectAway;
       self.save = function () {
-        const indexPattern = self.indexPattern;
-        const fields = indexPattern.fields;
-        const field = self.field.toActualField();
+        let indexPattern = self.indexPattern;
+        let fields = indexPattern.fields;
+        let field = self.field.toActualField();
 
         fields.remove({ name: field.name });
         fields.push(field);
@@ -78,25 +78,15 @@ uiModules
       };
 
       self.delete = function () {
-        function doDelete() {
-          const indexPattern = self.indexPattern;
-          const field = self.field;
+        let indexPattern = self.indexPattern;
+        let field = self.field;
 
-          indexPattern.fields.remove({ name: field.name });
-          return indexPattern.save()
-            .then(function () {
-              notify.info('Deleted Field "' + field.name + '"');
-              redirectAway();
-            });
-        }
-        const confirmModalOptions = {
-          confirmButtonText: 'Delete field',
-          onConfirm: doDelete
-        };
-        confirmModal(
-          `Are you sure want to delete '${self.field.name}'? This action is irreversible!`,
-          confirmModalOptions
-        );
+        indexPattern.fields.remove({ name: field.name });
+        return indexPattern.save()
+        .then(function () {
+          notify.info('Deleted Field "' + field.name + '"');
+          redirectAway();
+        });
       };
 
       self.isSupportedLang = function (lang) {
@@ -104,9 +94,9 @@ uiModules
       };
 
       $scope.$watch('editor.selectedFormatId', function (cur, prev) {
-        const format = self.field.format;
-        const changedFormat = cur !== prev;
-        const missingFormat = cur && (!format || format.type.id !== cur);
+        let format = self.field.format;
+        let changedFormat = cur !== prev;
+        let missingFormat = cur && (!format || format.type.id !== cur);
 
         if (!changedFormat || !missingFormat) return;
 
@@ -115,7 +105,7 @@ uiModules
       });
 
       $scope.$watch('editor.formatParams', function () {
-        const FieldFormat = getFieldFormatType();
+        let FieldFormat = getFieldFormatType();
         self.field.format = new FieldFormat(self.formatParams);
       }, true);
 
@@ -123,7 +113,7 @@ uiModules
         self.defFormatType = initDefaultFormat();
         self.fieldFormatTypes = [self.defFormatType].concat(fieldFormats.byFieldType[newValue] || []);
 
-        if (_.isUndefined(_.find(self.fieldFormatTypes, { id: self.selectedFormatId }))) {
+        if (_.isUndefined(_.find(self.fieldFormatTypes, {id: self.selectedFormatId}))) {
           delete self.selectedFormatId;
         }
       });
@@ -139,8 +129,8 @@ uiModules
       // copy the defined properties of the field to a plain object
       // which is mutable, and capture the changed seperately.
       function shadowCopy(field) {
-        const changes = {};
-        const shadowProps = {
+        let changes = {};
+        let shadowProps = {
           toActualField: {
             // bring the shadow copy out of the shadows
             value: function toActualField() {
@@ -150,7 +140,7 @@ uiModules
         };
 
         Object.getOwnPropertyNames(field).forEach(function (prop) {
-          const desc = Object.getOwnPropertyDescriptor(field, prop);
+          let desc = Object.getOwnPropertyDescriptor(field, prop);
           shadowProps[prop] = {
             enumerable: desc.enumerable,
             get: function () {
@@ -175,7 +165,7 @@ uiModules
       }
 
       function initDefaultFormat() {
-        const def = Object.create(fieldFormats.getDefaultType(self.field.type));
+        let def = Object.create(fieldFormats.getDefaultType(self.field.type));
 
         // explicitly set to undefined to prevent inheritting the prototypes id
         def.id = undefined;

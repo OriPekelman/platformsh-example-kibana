@@ -14,16 +14,16 @@ module.directive('globalNavLink', chrome => {
       isDisabled: '=',
       tooltipContent: '=',
       onClick: '&',
-      url: '=',
+      href: '=',
       kbnRoute: '=',
       icon: '=',
-      label: '=',
+      title: '=',
     },
     template: globalNavLinkTemplate,
     link: scope => {
       scope.getHref = () => {
-        if (scope.url) {
-          return scope.url;
+        if (scope.href) {
+          return scope.href;
         }
 
         if (scope.kbnRoute) {

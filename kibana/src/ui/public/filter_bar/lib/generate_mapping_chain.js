@@ -1,6 +1,7 @@
+import _ from 'lodash';
 export default function generateMappingChainProvider(Promise) {
 
-  const noop = function () {
+  let noop = function () {
     return Promise.reject(new Error('No mappings have been found for filter.'));
   };
 
@@ -18,4 +19,4 @@ export default function generateMappingChainProvider(Promise) {
     };
   };
 
-}
+};

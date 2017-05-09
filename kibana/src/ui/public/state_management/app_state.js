@@ -11,14 +11,12 @@
 import _ from 'lodash';
 import modules from 'ui/modules';
 import StateManagementStateProvider from 'ui/state_management/state';
+import PersistedStatePersistedStateProvider from 'ui/persisted_state/persisted_state';
+let urlParam = '_a';
 
-import 'ui/persisted_state';
-
-const urlParam = '_a';
-
-function AppStateProvider(Private, $rootScope, $location, $injector) {
-  const State = Private(StateManagementStateProvider);
-  const PersistedState = $injector.get('PersistedState');
+function AppStateProvider(Private, $rootScope, $location) {
+  let State = Private(StateManagementStateProvider);
+  let PersistedState = Private(PersistedStatePersistedStateProvider);
   let persistedStates;
   let eventUnsubscribers;
 
@@ -51,31 +49,31 @@ function AppStateProvider(Private, $rootScope, $location, $injector) {
    */
   AppState.prototype.makeStateful = function (prop) {
     if (persistedStates[prop]) return persistedStates[prop];
-    const self = this;
+    let self = this;
 
     // set up the ui state
     persistedStates[prop] = new PersistedState();
 
     // update the app state when the stateful instance changes
-    const updateOnChange = function () {
-      const replaceState = false; // TODO: debouncing logic
+    let updateOnChange = function () {
+      let replaceState = false; // TODO: debouncing logic
       self[prop] = persistedStates[prop].getChanges();
       // Save state to the URL.
       self.save(replaceState);
     };
-    const handlerOnChange = (method) => persistedStates[prop][method]('change', updateOnChange);
+    let handlerOnChange = (method) => persistedStates[prop][method]('change', updateOnChange);
     handlerOnChange('on');
     eventUnsubscribers.push(() => handlerOnChange('off'));
 
     // update the stateful object when the app state changes
-    const persistOnChange = function (changes) {
+    let persistOnChange = function (changes) {
       if (!changes) return;
 
       if (changes.indexOf(prop) !== -1) {
         persistedStates[prop].set(self[prop]);
       }
     };
-    const handlePersist = (method) => this[method]('fetch_with_changes', persistOnChange);
+    let handlePersist = (method) => this[method]('fetch_with_changes', persistOnChange);
     handlePersist('on');
     eventUnsubscribers.push(() => handlePersist('off'));
 
@@ -94,7 +92,7 @@ function AppStateProvider(Private, $rootScope, $location, $injector) {
 
     // Checks to see if the appState might already exist, even if it hasn't been newed up
     get.previouslyStored = function () {
-      const search = $location.search();
+      let search = $location.search();
       return search[urlParam] ? true : false;
     };
 

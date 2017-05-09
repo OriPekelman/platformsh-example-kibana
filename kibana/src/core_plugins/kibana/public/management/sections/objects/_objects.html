@@ -13,10 +13,8 @@
           class="kuiButton kuiButton--basic kuiButton--iconText"
           ng-click="exportAll()"
         >
-          <span class="kuiButton__inner">
-            <span aria-hidden="true" class="kuiButton__icon kuiIcon fa-download"></span>
-            <span>Export Everything</span>
-          </span>
+          <span aria-hidden="true" class="kuiButton__icon kuiIcon fa-download"></span>
+          Export Everything
         </button>
 
         <file-upload
@@ -27,10 +25,8 @@
             class="kuiButton kuiButton--basic kuiButton--iconText"
             data-import-saved-objects-button
           >
-            <span class="kuiButton__inner">
-              <span aria-hidden="true" class="kuiButton__icon kuiIcon fa-upload"></span>
-              <span>Import</span>
-            </span>
+            <span aria-hidden="true" class="kuiButton__icon kuiIcon fa-upload"></span>
+            Import
           </button>
         </file-upload>
       </div>
@@ -84,14 +80,13 @@
           <!-- Bulk delete button -->
           <button
             class="kuiButton kuiButton--danger kuiButton--iconText"
-            ng-click="bulkDelete()"
+            confirm-click="bulkDelete()"
+            confirmation="Are you sure you want to delete the selected {{currentTab.title}}? This action is irreversible!"
             aria-label="Delete selected objects"
             ng-disabled="selectedItems.length == 0"
           >
-            <span class="kuiButton__inner">
-              <span aria-hidden="true" class="kuiButton__icon kuiIcon fa-trash"></span>
-              <span>Delete</span>
-            </span>
+            <span aria-hidden="true" class="kuiButton__icon kuiIcon fa-trash"></span>
+            Delete
           </button>
 
           <!-- Bulk export button -->
@@ -101,10 +96,8 @@
             aria-label="Export selected objects"
             ng-disabled="selectedItems.length == 0"
           >
-            <span class="kuiButton__inner">
-              <span aria-hidden="true" class="kuiButton__icon kuiIcon fa-download"></span>
-              <span>Export</span>
-            </span>
+            <span aria-hidden="true" class="kuiButton__icon kuiIcon fa-download"></span>
+            Export
           </button>
         </div>
 
@@ -114,10 +107,7 @@
       </div>
 
       <!-- NoResults -->
-      <div
-        class="kuiPanel kuiPanel--centered kuiPanel--withHeader"
-        ng-if="!service.data.length"
-      >
+      <div class="kuiPanel kuiPanel--centered" ng-if="!service.data.length">
         <div class="kuiNoItems">
           No {{service.title}} matched your search.
         </div>
@@ -147,14 +137,12 @@
             class="kuiTableRow"
           >
             <td class="kuiTableRowCell kuiTableRowCell--checkBox">
-              <div class="kuiTableRowCell__liner">
-                <input
-                  type="checkbox"
-                  class="kuiCheckBox"
-                  ng-click="toggleItem(item)"
-                  ng-checked="selectedItems.indexOf(item) >= 0"
-                >
-              </div>
+              <input
+                type="checkbox"
+                class="kuiCheckBox"
+                ng-click="toggleItem(item)"
+                ng-checked="selectedItems.indexOf(item) >= 0"
+              >
             </td>
             <td class="kuiTableRowCell">
               <div class="kuiTableRowCell__liner">

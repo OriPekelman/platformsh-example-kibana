@@ -1,3 +1,4 @@
+import _ from 'lodash';
 export default function TableProvider() {
 
   /**
@@ -34,4 +35,4 @@ export default function TableProvider() {
 
 
   return Table;
-}
+};

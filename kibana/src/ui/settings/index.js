@@ -1,12 +1,20 @@
 'use strict';
 
-Object.defineProperty(exports, "__esModule", {
+Object.defineProperty(exports, '__esModule', {
   value: true
 });
 
+var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
+
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-exports.default = setupSettings;
+exports['default'] = setupSettings;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
 
 var _lodash = require('lodash');
 
@@ -18,186 +26,146 @@ var _bluebird = require('bluebird');
 
 var _bluebird2 = _interopRequireDefault(_bluebird);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
-
 function setupSettings(kbnServer, server, config) {
-  let get = (() => {
-    var _ref = _asyncToGenerator(function* (req, key) {
-      assertRequest(req);
-      return getAll(req).then(function (all) {
-        return all[key];
-      });
+  var get = _asyncToGenerator(function* (req, key) {
+    assertRequest(req);
+    return getAll(req).then(function (all) {
+      return all[key];
     });
+  });
 
-    return function get(_x, _x2) {
-      return _ref.apply(this, arguments);
-    };
-  })();
-
-  let getAll = (() => {
-    var _ref2 = _asyncToGenerator(function* (req) {
-      assertRequest(req);
-      return getRaw(req).then(function (raw) {
-        return Object.keys(raw).reduce(function (all, key) {
-          const item = raw[key];
-          const hasUserValue = 'userValue' in item;
-          all[key] = hasUserValue ? item.userValue : item.value;
-          return all;
-        }, {});
-      });
+  var getAll = _asyncToGenerator(function* (req) {
+    assertRequest(req);
+    return getRaw(req).then(function (raw) {
+      return Object.keys(raw).reduce(function (all, key) {
+        var item = raw[key];
+        var hasUserValue = ('userValue' in item);
+        all[key] = hasUserValue ? item.userValue : item.value;
+        return all;
+      }, {});
     });
+  });
 
-    return function getAll(_x3) {
-      return _ref2.apply(this, arguments);
-    };
-  })();
+  var getRaw = _asyncToGenerator(function* (req) {
+    assertRequest(req);
+    return Promise.all([getDefaults(), getUserProvided(req)]).then(function (_ref) {
+      var _ref2 = _slicedToArray(_ref, 2);
 
-  let getRaw = (() => {
-    var _ref3 = _asyncToGenerator(function* (req) {
-      assertRequest(req);
-      return Promise.all([getDefaults(), getUserProvided(req)]).then(function ([defaults, user]) {
-        return (0, _lodash.defaultsDeep)(user, defaults);
-      });
+      var defaults = _ref2[0];
+      var user = _ref2[1];
+      return (0, _lodash.defaultsDeep)(user, defaults);
     });
+  });
 
-    return function getRaw(_x4) {
-      return _ref3.apply(this, arguments);
-    };
-  })();
+  var getUserProvided = _asyncToGenerator(function* (req) {
+    var _Bluebird$resolve;
 
-  let getUserProvided = (() => {
-    var _ref4 = _asyncToGenerator(function* (req, { ignore401Errors = false } = {}) {
-      assertRequest(req);
+    var _ref3 = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
 
-      var _server$plugins$elast = server.plugins.elasticsearch.getCluster('admin');
+    var _ref3$ignore401Errors = _ref3.ignore401Errors;
+    var ignore401Errors = _ref3$ignore401Errors === undefined ? false : _ref3$ignore401Errors;
 
-      const callWithRequest = _server$plugins$elast.callWithRequest,
-            errors = _server$plugins$elast.errors;
+    assertRequest(req);
 
-      // If the ui settings status isn't green, we shouldn't be attempting to get
-      // user settings, since we can't be sure that all the necessary conditions
-      // (e.g. elasticsearch being available) are met.
+    var _server$plugins$elasticsearch$getCluster = server.plugins.elasticsearch.getCluster('admin');
 
-      if (status.state !== 'green') {
-        return hydrateUserSettings({});
-      }
+    var callWithRequest = _server$plugins$elasticsearch$getCluster.callWithRequest;
+    var errors = _server$plugins$elasticsearch$getCluster.errors;
 
-      const params = getClientSettings(config);
-      const allowedErrors = [errors[404], errors[403], errors.NoConnections];
-      if (ignore401Errors) allowedErrors.push(errors[401]);
+    // If the ui settings status isn't green, we shouldn't be attempting to get
+    // user settings, since we can't be sure that all the necessary conditions
+    // (e.g. elasticsearch being available) are met.
+    if (status.state !== 'green') {
+      return hydrateUserSettings({});
+    }
 
-      return _bluebird2.default.resolve(callWithRequest(req, 'get', params, { wrap401Errors: !ignore401Errors })).catch(...allowedErrors, function () {
-        return {};
-      }).then(function (resp) {
-        return resp._source || {};
-      }).then(function (source) {
-        return hydrateUserSettings(source);
-      });
+    var params = getClientSettings(config);
+    var allowedErrors = [errors[404], errors[403], errors.NoConnections];
+    if (ignore401Errors) allowedErrors.push(errors[401]);
+
+    return (_Bluebird$resolve = _bluebird2['default'].resolve(callWithRequest(req, 'get', params, { wrap401Errors: !ignore401Errors })))['catch'].apply(_Bluebird$resolve, allowedErrors.concat([function (err) {
+      return {};
+    }])).then(function (resp) {
+      return resp._source || {};
+    }).then(function (source) {
+      return hydrateUserSettings(source);
     });
+  });
 
-    return function getUserProvided(_x5) {
-      return _ref4.apply(this, arguments);
-    };
-  })();
+  var setMany = _asyncToGenerator(function* (req, changes) {
+    assertRequest(req);
 
-  let setMany = (() => {
-    var _ref5 = _asyncToGenerator(function* (req, changes) {
-      assertRequest(req);
+    var _server$plugins$elasticsearch$getCluster2 = server.plugins.elasticsearch.getCluster('admin');
 
-      var _server$plugins$elast2 = server.plugins.elasticsearch.getCluster('admin');
+    var callWithRequest = _server$plugins$elasticsearch$getCluster2.callWithRequest;
 
-      const callWithRequest = _server$plugins$elast2.callWithRequest;
-
-      const clientParams = _extends({}, getClientSettings(config), {
-        body: { doc: changes }
-      });
-      return callWithRequest(req, 'update', clientParams).then(function () {
-        return {};
-      });
+    var clientParams = _extends({}, getClientSettings(config), {
+      body: { doc: changes }
     });
-
-    return function setMany(_x6, _x7) {
-      return _ref5.apply(this, arguments);
-    };
-  })();
-
-  let set = (() => {
-    var _ref6 = _asyncToGenerator(function* (req, key, value) {
-      assertRequest(req);
-      return setMany(req, { [key]: value });
+    return callWithRequest(req, 'update', clientParams).then(function () {
+      return {};
     });
+  });
 
-    return function set(_x8, _x9, _x10) {
-      return _ref6.apply(this, arguments);
-    };
-  })();
+  var set = _asyncToGenerator(function* (req, key, value) {
+    assertRequest(req);
+    return setMany(req, _defineProperty({}, key, value));
+  });
 
-  let remove = (() => {
-    var _ref7 = _asyncToGenerator(function* (req, key) {
-      assertRequest(req);
-      return set(req, key, null);
+  var remove = _asyncToGenerator(function* (req, key) {
+    assertRequest(req);
+    return set(req, key, null);
+  });
+
+  var removeMany = _asyncToGenerator(function* (req, keys) {
+    assertRequest(req);
+    var changes = {};
+    keys.forEach(function (key) {
+      changes[key] = null;
     });
+    return setMany(req, changes);
+  });
 
-    return function remove(_x11, _x12) {
-      return _ref7.apply(this, arguments);
-    };
-  })();
-
-  let removeMany = (() => {
-    var _ref8 = _asyncToGenerator(function* (req, keys) {
-      assertRequest(req);
-      const changes = {};
-      keys.forEach(function (key) {
-        changes[key] = null;
-      });
-      return setMany(req, changes);
-    });
-
-    return function removeMany(_x13, _x14) {
-      return _ref8.apply(this, arguments);
-    };
-  })();
-
-  const status = kbnServer.status.create('ui settings');
+  var status = kbnServer.status.create('ui settings');
 
   if (!config.get('uiSettings.enabled')) {
     status.disabled('uiSettings.enabled config is set to `false`');
     return;
   }
 
-  const uiSettings = {
+  var uiSettings = {
     // returns a Promise for the value of the requested setting
-    get,
+    get: get,
     // returns a Promise for a hash of setting key/value pairs
-    getAll,
+    getAll: getAll,
     // .set(key, value), returns a Promise for persisting the new value to ES
-    set,
+    set: set,
     // takes a key/value hash, returns a Promise for persisting the new values to ES
-    setMany,
+    setMany: setMany,
     // returns a Promise for removing the provided key from user-specific settings
-    remove,
+    remove: remove,
     // takes an array, returns a Promise for removing every provided key from user-specific settings
-    removeMany,
+    removeMany: removeMany,
 
     // returns a Promise for the default settings, follows metadata format (see ./defaults)
-    getDefaults,
+    getDefaults: getDefaults,
     // returns a Promise for user-specific settings stored in ES, follows metadata format
-    getUserProvided,
+    getUserProvided: getUserProvided,
     // returns a Promise merging results of getDefaults & getUserProvided, follows metadata format
-    getRaw
+    getRaw: getRaw
   };
 
-  server.decorate('server', 'uiSettings', () => uiSettings);
+  server.decorate('server', 'uiSettings', function () {
+    return uiSettings;
+  });
   kbnServer.ready().then(mirrorEsStatus);
 
   function getDefaults() {
-    return Promise.resolve((0, _defaults2.default)());
+    return Promise.resolve((0, _defaults2['default'])());
   }
 
   function mirrorEsStatus() {
-    const esStatus = kbnServer.status.getForPluginId('elasticsearch');
+    var esStatus = kbnServer.status.getForPluginId('elasticsearch');
 
     if (!esStatus) {
       status.red('UI Settings requires the elasticsearch plugin');
@@ -208,9 +176,9 @@ function setupSettings(kbnServer, server, config) {
     esStatus.on('change', copyStatus);
 
     function copyStatus() {
-      const state = esStatus.state;
+      var state = esStatus.state;
 
-      const statusMessage = state === 'green' ? 'Ready' : `Elasticsearch plugin is ${state}`;
+      var statusMessage = state === 'green' ? 'Ready' : 'Elasticsearch plugin is ' + state;
       status[state](statusMessage);
     }
   }
@@ -219,19 +187,19 @@ function setupSettings(kbnServer, server, config) {
 function hydrateUserSettings(user) {
   return Object.keys(user).reduce(expand, {});
   function expand(expanded, key) {
-    const userValue = user[key];
+    var userValue = user[key];
     if (userValue !== null) {
-      expanded[key] = { userValue };
+      expanded[key] = { userValue: userValue };
     }
     return expanded;
   }
 }
 
 function getClientSettings(config) {
-  const index = config.get('kibana.index');
-  const id = config.get('pkg.version');
-  const type = 'config';
-  return { index, type, id };
+  var index = config.get('kibana.index');
+  var id = config.get('pkg.version');
+  var type = 'config';
+  return { index: index, type: type, id: id };
 }
 
 function assertRequest(req) {

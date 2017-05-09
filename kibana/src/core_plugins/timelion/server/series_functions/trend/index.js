@@ -1,34 +1,27 @@
 'use strict';
 
-var _lodash = require('lodash');
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
-var _lodash2 = _interopRequireDefault(_lodash);
+var _libRegress = require('./lib/regress');
 
-var _chainable = require('../../lib/classes/chainable');
+var regress = _interopRequireWildcard(_libRegress);
 
-var _chainable2 = _interopRequireDefault(_chainable);
+var _ = require('lodash');
+var Chainable = require('../../lib/classes/chainable');
 
-var _regress = require('./lib/regress');
-
-var regress = _interopRequireWildcard(_regress);
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-const validRegressions = {
+var validRegressions = {
   linear: 'linear',
   log: 'logarithmic'
 };
 
-module.exports = new _chainable2.default('trend', {
+module.exports = new Chainable('trend', {
   args: [{
     name: 'inputSeries',
     types: ['seriesList']
   }, {
     name: 'mode',
     types: ['string'],
-    help: 'The algorithm to use for generating the trend line. One of: ' + _lodash2.default.keys(validRegressions).join(', ')
+    help: 'The algorithm to use for generating the trend line. One of: ' + _.keys(validRegressions).join(', ')
   }, {
     name: 'start',
     types: ['number', 'null'],
@@ -40,24 +33,24 @@ module.exports = new _chainable2.default('trend', {
   }],
   help: 'Draws a trend line using a specified regression algorithm',
   fn: function absFn(args) {
-    const newSeries = _lodash2.default.cloneDeep(args.byName.inputSeries);
+    var newSeries = _.cloneDeep(args.byName.inputSeries);
 
-    _lodash2.default.each(newSeries.list, function (series) {
-      const length = series.data.length;
-      let start = args.byName.start == null ? 0 : args.byName.start;
-      let end = args.byName.end == null ? length : args.byName.end;
+    _.each(newSeries.list, function (series) {
+      var length = series.data.length;
+      var start = args.byName.start == null ? 0 : args.byName.start;
+      var end = args.byName.end == null ? length : args.byName.end;
       start = start >= 0 ? start : length + start;
       end = end > 0 ? end : length + end;
 
-      const subset = series.data.slice(start, end);
+      var subset = series.data.slice(start, end);
 
-      const result = regress[args.byName.mode || 'linear'](subset);
+      var result = regress[args.byName.mode || 'linear'](subset);
 
-      _lodash2.default.each(series.data, function (point) {
+      _.each(series.data, function (point) {
         point[1] = null;
       });
 
-      _lodash2.default.each(result, function (point, i) {
+      _.each(result, function (point, i) {
         series.data[start + i] = point;
       });
     });

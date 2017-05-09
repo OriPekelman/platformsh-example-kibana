@@ -1,17 +1,13 @@
 'use strict';
 
-var _lodash = require('lodash');
-
-var _lodash2 = _interopRequireDefault(_lodash);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+var _ = require('lodash');
 
 module.exports = function (func) {
-  const functions = {};
+  var functions = {};
   functions[func.name] = func;
   if (func.aliases) {
-    _lodash2.default.each(func.aliases, function (alias) {
-      const aliasFn = _lodash2.default.clone(func);
+    _.each(func.aliases, function (alias) {
+      var aliasFn = _.clone(func);
       aliasFn.isAlias = true;
       functions[alias] = aliasFn;
     });

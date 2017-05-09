@@ -1,5 +1,6 @@
 import _ from 'lodash';
 import AggTypesBucketsBucketAggTypeProvider from 'ui/agg_types/buckets/_bucket_agg_type';
+import AggTypesBucketsBucketCountBetweenProvider from 'ui/agg_types/buckets/_bucket_count_between';
 import VisAggConfigProvider from 'ui/vis/agg_config';
 import VisSchemasProvider from 'ui/vis/schemas';
 import AggTypesBucketsCreateFilterTermsProvider from 'ui/agg_types/buckets/create_filter/terms';
@@ -8,31 +9,25 @@ import orderAndSizeTemplate from 'ui/agg_types/controls/order_and_size.html';
 import routeBasedNotifierProvider from 'ui/route_based_notifier';
 
 export default function TermsAggDefinition(Private) {
-  const BucketAggType = Private(AggTypesBucketsBucketAggTypeProvider);
-  const AggConfig = Private(VisAggConfigProvider);
-  const Schemas = Private(VisSchemasProvider);
-  const createFilter = Private(AggTypesBucketsCreateFilterTermsProvider);
+  let BucketAggType = Private(AggTypesBucketsBucketAggTypeProvider);
+  let bucketCountBetween = Private(AggTypesBucketsBucketCountBetweenProvider);
+  let AggConfig = Private(VisAggConfigProvider);
+  let Schemas = Private(VisSchemasProvider);
+  let createFilter = Private(AggTypesBucketsCreateFilterTermsProvider);
   const routeBasedNotifier = Private(routeBasedNotifierProvider);
 
-  const aggFilter = [
-    '!top_hits', '!percentiles', '!median', '!std_dev',
-    '!derivative', '!moving_avg', '!serial_diff', '!cumulative_sum',
-    '!avg_bucket', '!max_bucket', '!min_bucket', '!sum_bucket'
-  ];
-
-  const orderAggSchema = (new Schemas([
+  let orderAggSchema = (new Schemas([
     {
       group: 'none',
       name: 'orderAgg',
       title: 'Order Agg',
-      hideCustomLabel: true,
-      aggFilter: aggFilter
+      aggFilter: ['!percentiles', '!median', '!std_dev']
     }
   ])).all[0];
 
   function isNotType(type) {
     return function (agg) {
-      const field = agg.params.field;
+      let field = agg.params.field;
       return !field || field.type !== type;
     };
   }
@@ -56,7 +51,7 @@ export default function TermsAggDefinition(Private) {
     name: 'terms',
     title: 'Terms',
     makeLabel: function (agg) {
-      const params = agg.params;
+      let params = agg.params;
       return agg.getFieldDisplayName() + ': ' + params.order.display;
     },
     createFilter: createFilter,
@@ -97,7 +92,7 @@ export default function TermsAggDefinition(Private) {
         makeOrderAgg: function (termsAgg, state) {
           state = state || {};
           state.schema = orderAggSchema;
-          const orderAgg = new AggConfig(termsAgg.vis, state);
+          let orderAgg = new AggConfig(termsAgg.vis, state);
           orderAgg.id = termsAgg.id + '-orderAgg';
           return orderAgg;
         },
@@ -110,32 +105,24 @@ export default function TermsAggDefinition(Private) {
             }
           };
 
-          const INIT = {}; // flag to know when prevOrderBy has changed
+          let INIT = {}; // flag to know when prevOrderBy has changed
           let prevOrderBy = INIT;
 
           $scope.$watch('responseValueAggs', updateOrderAgg);
           $scope.$watch('agg.params.orderBy', updateOrderAgg);
 
-          // Returns true if the agg is not compatible with the terms bucket
-          $scope.rejectAgg = function rejectAgg(agg) {
-            return aggFilter.includes(`!${agg.type.name}`);
-          };
-
           function updateOrderAgg() {
-            // abort until we get the responseValueAggs
-            if (!$scope.responseValueAggs) return;
-            const agg = $scope.agg;
-            const params = agg.params;
-            const orderBy = params.orderBy;
-            const paramDef = agg.type.params.byName.orderAgg;
+            let agg = $scope.agg;
+            let aggs = agg.vis.aggs;
+            let params = agg.params;
+            let orderBy = params.orderBy;
+            let paramDef = agg.type.params.byName.orderAgg;
 
             // setup the initial value of orderBy
             if (!orderBy && prevOrderBy === INIT) {
-              let respAgg = _($scope.responseValueAggs).filter((agg) => !$scope.rejectAgg(agg)).first();
-              if (!respAgg) {
-                respAgg = { id: '_term' };
-              }
-              params.orderBy = respAgg.id;
+              // abort until we get the responseValueAggs
+              if (!$scope.responseValueAggs) return;
+              params.orderBy = (_.first($scope.responseValueAggs) || { id: 'custom' }).id;
               return;
             }
 
@@ -145,10 +132,15 @@ export default function TermsAggDefinition(Private) {
             // we aren't creating a custom aggConfig
             if (!orderBy || orderBy !== 'custom') {
               params.orderAgg = null;
-              // ensure that orderBy is set to a valid agg
-              const respAgg = _($scope.responseValueAggs).filter((agg) => !$scope.rejectAgg(agg)).find({ id: orderBy });
-              if (!respAgg) {
+
+              if (orderBy === '_term') {
                 params.orderBy = '_term';
+                return;
+              }
+
+              // ensure that orderBy is set to a valid agg
+              if (!_.find($scope.responseValueAggs, { id: orderBy })) {
+                params.orderBy = null;
               }
               return;
             }
@@ -157,9 +149,9 @@ export default function TermsAggDefinition(Private) {
           }
         },
         write: function (agg, output) {
-          const vis = agg.vis;
-          const dir = agg.params.order.val;
-          const order = output.params.order = {};
+          let vis = agg.vis;
+          let dir = agg.params.order.val;
+          let order = output.params.order = {};
 
           let orderAgg = agg.params.orderAgg || vis.aggs.getResponseAggById(agg.params.orderBy);
 
@@ -183,7 +175,7 @@ export default function TermsAggDefinition(Private) {
             return;
           }
 
-          const orderAggId = orderAgg.id;
+          let orderAggId = orderAgg.id;
           if (orderAgg.parentId) {
             orderAgg = vis.aggs.byId[orderAgg.parentId];
           }
@@ -209,4 +201,4 @@ export default function TermsAggDefinition(Private) {
       }
     ]
   });
-}
+};

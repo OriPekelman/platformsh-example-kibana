@@ -1,5 +1,6 @@
 
 import modules from 'ui/modules';
+import angular from 'angular';
 
 modules.get('kibana')
 .service('globalNavState', (localStorage, $rootScope) => {

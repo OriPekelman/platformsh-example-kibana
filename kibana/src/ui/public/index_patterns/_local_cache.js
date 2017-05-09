@@ -1,19 +1,20 @@
+import _ from 'lodash';
 import angular from 'angular';
 
 export default function LocalCacheFactory() {
   function LocalCache(opts) {
     opts = opts || {};
-    const _id = opts.id || function (o) { return '' + o; };
+    let _id = opts.id || function (o) { return '' + o; };
     let _cache = {};
 
     this.get = function (obj) {
-      const id = _id(obj);
+      let id = _id(obj);
       return _cache[id] ? JSON.parse(_cache[id]) : null;
     };
 
     this.set = function (obj, val) {
-      const id = _id(obj);
-      const clean = !_cache.hasOwnProperty(id);
+      let id = _id(obj);
+      let clean = !_cache.hasOwnProperty(id);
       _cache[id] = angular.toJson(val);
       return clean;
     };
@@ -24,11 +25,11 @@ export default function LocalCacheFactory() {
         return;
       }
 
-      const id = _id(obj);
+      let id = _id(obj);
       delete _cache[id];
     };
   }
 
   return LocalCache;
-}
+};
 

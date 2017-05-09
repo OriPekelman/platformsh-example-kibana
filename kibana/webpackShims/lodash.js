@@ -1,11 +1,11 @@
-'use strict';
-
 /**
  * THESE ARE AUTOMATICALLY INCLUDED IN LODASH
  *
  * use:
  * var _ = require('lodash');
  */
+
+'use strict';
 
 var _ = require('node_modules/lodash/index.js').runInContext();
 require('ui/utils/lodash-mixins/string')(_);

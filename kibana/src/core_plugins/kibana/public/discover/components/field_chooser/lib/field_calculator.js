@@ -80,7 +80,7 @@ function _groupValues(allValues, params) {
     }
 
     _.each(k, function (key) {
-      if (groups.hasOwnProperty(key)) {
+      if (_.has(groups, key)) {
         groups[key].count++;
       } else {
         groups[key] = {

@@ -1,6 +1,8 @@
 import _ from 'lodash';
 import moment from 'moment';
 
+import errors from 'ui/errors';
+
 import RequestQueueProvider from '../../_request_queue';
 import ErrorHandlerRequestProvider from './error_handler';
 
@@ -12,43 +14,13 @@ export default function AbstractReqProvider(Private, Promise) {
     constructor(source, defer) {
       this.source = source;
       this.defer = defer || Promise.defer();
-      this.abortedDefer = Promise.defer();
+      this._whenAbortedHandlers = [];
+
       requestQueue.push(this);
     }
 
-    /**
-     *  Called by the loopers to find requests that should be sent to the
-     *  fetch() module. When a module is sent to fetch() it's _fetchRequested flag
-     *  is set, and this consults that flag so requests are not send to fetch()
-     *  multiple times.
-     *
-     *  @return {Boolean}
-     */
     canStart() {
-      return !this._fetchRequested && !this.stopped && !this.source._fetchDisabled;
-    }
-
-    /**
-     *  Used to find requests that were previously sent to the fetch() module but
-     *  have not been started yet, so they can be started.
-     *
-     *  @return {Boolean}
-     */
-    isFetchRequestedAndPending() {
-      return this._fetchRequested && !this.started;
-    }
-
-    /**
-     *  Called by the fetch() module when this request has been sent to
-     *  be fetched. At that point the request is somewhere between `ready-to-start`
-     *  and `started`. The fetch module then waits a short period of time to
-     *  allow requests to build up in the request queue, and then immediately
-     *  fetches all requests that return true from `isFetchRequestedAndPending()`
-     *
-     *  @return {undefined}
-     */
-    _setFetchRequested() {
-      this._fetchRequested = true;
+      return Boolean(!this.stopped && !this.source._fetchDisabled);
     }
 
     start() {
@@ -77,7 +49,7 @@ export default function AbstractReqProvider(Private, Promise) {
       return resp;
     }
 
-    filterError() {
+    filterError(resp) {
       return false;
     }
 
@@ -118,12 +90,11 @@ export default function AbstractReqProvider(Private, Promise) {
       this._markStopped();
       this.defer = null;
       this.aborted = true;
-      this.abortedDefer.resolve();
-      this.abortedDefer = null;
+      _.callEach(this._whenAbortedHandlers);
     }
 
     whenAborted(cb) {
-      this.abortedDefer.promise.then(cb);
+      this._whenAbortedHandlers.push(cb);
     }
 
     complete() {
@@ -132,16 +103,8 @@ export default function AbstractReqProvider(Private, Promise) {
       this.defer.resolve(this.resp);
     }
 
-    getCompletePromise() {
-      return this.defer.promise;
-    }
-
-    getCompleteOrAbortedPromise() {
-      return Promise.race([ this.defer.promise, this.abortedDefer.promise ]);
-    }
-
     clone() {
       return new this.constructor(this.source, this.defer);
     }
   };
-}
+};

@@ -1,28 +1,29 @@
 'use strict';
 
-Object.defineProperty(exports, "__esModule", {
+Object.defineProperty(exports, '__esModule', {
   value: true
 });
 
-var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
 
-exports.default = defaultSettingsProvider;
+exports['default'] = defaultSettingsProvider;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } }
 
 var _momentTimezone = require('moment-timezone');
 
 var _momentTimezone2 = _interopRequireDefault(_momentTimezone);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
 function defaultSettingsProvider() {
-  const weekdays = _momentTimezone2.default.weekdays().slice();
+  var weekdays = _momentTimezone2['default'].weekdays().slice();
 
   var _weekdays = _slicedToArray(weekdays, 1);
 
-  const defaultWeekday = _weekdays[0];
+  var defaultWeekday = _weekdays[0];
 
   // wrapped in provider so that a new instance is given to each app/test
-
   return {
     'buildNum': {
       readonly: true
@@ -45,18 +46,11 @@ function defaultSettingsProvider() {
       value: 'Browser',
       description: 'Which timezone should be used.  "Browser" will use the timezone detected by your browser.',
       type: 'select',
-      options: ['Browser', ..._momentTimezone2.default.tz.names()]
+      options: ['Browser'].concat(_toConsumableArray(_momentTimezone2['default'].tz.names()))
     },
     'dateFormat:scaled': {
       type: 'json',
-      value: `[
-  ["", "HH:mm:ss.SSS"],
-  ["PT1S", "HH:mm:ss"],
-  ["PT1M", "HH:mm"],
-  ["PT1H", "YYYY-MM-DD HH:mm"],
-  ["P1DT", "YYYY-MM-DD"],
-  ["P1YT", "YYYY"]
-]`,
+      value: '[\n  ["", "HH:mm:ss.SSS"],\n  ["PT1S", "HH:mm:ss"],\n  ["PT1M", "HH:mm"],\n  ["PT1H", "YYYY-MM-DD HH:mm"],\n  ["P1DT", "YYYY-MM-DD"],\n  ["P1YT", "YYYY"]\n]',
       description: 'Values that define the format used in situations where timebased' + ' data is rendered in order, and formatted timestamps should adapt to the' + ' interval between measurements. Keys are' + ' <a href="http://en.wikipedia.org/wiki/ISO_8601#Time_intervals" target="_blank">' + 'ISO8601 intervals.</a>'
     },
     'dateFormat:dow': {
@@ -84,10 +78,6 @@ function defaultSettingsProvider() {
     'doc_table:highlight': {
       value: true,
       description: 'Highlight results in Discover and Saved Searches Dashboard.' + 'Highlighting makes requests slow when working on big documents.'
-    },
-    'doc_table:highlight:all_fields': {
-      value: true,
-      description: 'Improves highlighting by using a separate "highlight_query" that uses "all_fields" mode on "query_string" queries. ' + 'Set to false if you are using a "default_field" in your index.'
     },
     'courier:maxSegmentCount': {
       value: 30,
@@ -171,14 +161,7 @@ function defaultSettingsProvider() {
     },
     'format:defaultTypeMap': {
       type: 'json',
-      value: `{
-  "ip": { "id": "ip", "params": {} },
-  "date": { "id": "date", "params": {} },
-  "number": { "id": "number", "params": {} },
-  "boolean": { "id": "boolean", "params": {} },
-  "_source": { "id": "_source", "params": {} },
-  "_default_": { "id": "string", "params": {} }
-}`,
+      value: '{\n  "ip": { "id": "ip", "params": {} },\n  "date": { "id": "date", "params": {} },\n  "number": { "id": "number", "params": {} },\n  "boolean": { "id": "boolean", "params": {} },\n  "_source": { "id": "_source", "params": {} },\n  "_default_": { "id": "string", "params": {} }\n}',
       description: 'Map of the format name to use by default for each field type. ' + '"_default_" is used if the field type is not mentioned explicitly'
     },
     'format:number:defaultPattern': {
@@ -208,20 +191,12 @@ function defaultSettingsProvider() {
     },
     'timepicker:timeDefaults': {
       type: 'json',
-      value: `{
-  "from": "now-15m",
-  "to": "now",
-  "mode": "quick"
-}`,
+      value: '{\n  "from": "now-15m",\n  "to": "now",\n  "mode": "quick"\n}',
       description: 'The timefilter selection to use when Kibana is started without one'
     },
     'timepicker:refreshIntervalDefaults': {
       type: 'json',
-      value: `{
-  "display": "Off",
-  "pause": false,
-  "value": 0
-}`,
+      value: '{\n  "display": "Off",\n  "pause": false,\n  "value": 0\n}',
       description: 'The timefilter\'s default refresh interval'
     },
     'dashboard:defaultDarkTheme': {
@@ -252,10 +227,6 @@ function defaultSettingsProvider() {
     'notifications:lifetime:info': {
       value: 5000,
       description: 'The time in milliseconds which an information notification ' + 'will be displayed on-screen for. Setting to Infinity will disable.'
-    },
-    'metrics:max_buckets': {
-      value: 2000,
-      description: 'The maximum number of buckets a single datasource can return'
     },
     // Timelion stuff
     'timelion:showTutorial': {
@@ -297,19 +268,9 @@ function defaultSettingsProvider() {
     'state:storeInSessionStorage': {
       value: false,
       description: 'The URL can sometimes grow to be too large for some browsers to ' + 'handle. To counter-act this we are testing if storing parts of the URL in ' + 'sessions storage could help. Please let us know how it goes!'
-    },
-    'indexPattern:placeholder': {
-      value: 'logstash-*',
-      description: 'The placeholder for the field "Index name or pattern" in the "Settings > Indices" tab.'
-    },
-    'context:defaultSize': {
-      value: 5,
-      description: 'The number of surrounding entries to show in the context view'
-    },
-    'context:step': {
-      value: 5,
-      description: 'The step size to increment or decrement the context size by'
     }
   };
 }
+
+;
 module.exports = exports['default'];

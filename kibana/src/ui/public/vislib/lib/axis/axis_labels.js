@@ -1,6 +1,7 @@
 import d3 from 'd3';
 import $ from 'jquery';
-export default function AxisLabelsFactory() {
+import _ from 'lodash';
+export default function AxisLabelsFactory(Private) {
   class AxisLabels {
     constructor(axisConfig, scale) {
       this.axisConfig = axisConfig;
@@ -9,7 +10,7 @@ export default function AxisLabelsFactory() {
 
     render(selection) {
       selection.call(this.draw());
-    }
+    };
 
     rotateAxisLabels() {
       const config = this.axisConfig;
@@ -19,41 +20,33 @@ export default function AxisLabelsFactory() {
         if (config.get('labels.rotate')) {
           text
           .style('text-anchor', function () {
-            const currentValue = $(this).css('text-anchor');
-            const rotateDeg = config.get('labels.rotate');
-            if (!rotateDeg) return currentValue;
-            else {
-              const position = config.get('position');
-              switch (position) {
-                case 'top': return 'end';
-                case 'bottom': return 'end';
-                default:
-                  if (rotateDeg === 90 || rotateDeg === -90) return 'middle';
-                  return currentValue;
-              }
-            }
+            return config.get('labels.rotateAnchor') === 'center' ? 'center' : 'end';
           })
           .attr('dy', function () {
-            return config.isHorizontal() ? '0.3em' : '0';
+            if (config.isHorizontal()) {
+              if (config.get('position') === 'top') return '-0.9em';
+              else return '0.3em';
+            }
+            return '0';
+          })
+          .attr('dx', function () {
+            return config.isHorizontal() ? '-0.9em' : '0';
           })
           .attr('transform', function rotate(d, j) {
-            const position = config.get('position');
-            const rotateDeg = position === 'top' ? config.get('labels.rotate') : -config.get('labels.rotate');
-
-            if ($(this).css('text-anchor') === 'middle') {
+            let rotateDeg = config.get('labels.rotate');
+            if (config.get('labels.rotateAnchor') === 'center') {
               const coord = text[0][j].getBBox();
               const transX = ((coord.x) + (coord.width / 2));
               const transY = ((coord.y) + (coord.height / 2));
               return `rotate(${rotateDeg}, ${transX}, ${transY})`;
             } else {
-              const transX = this.attributes.x.nodeValue;
-              const transY = this.attributes.y.nodeValue;
-              return `rotate(${rotateDeg}, ${transX}, ${transY})`;
+              rotateDeg = config.get('position') === 'top' ? rotateDeg : -rotateDeg;
+              return `rotate(${rotateDeg})`;
             }
           });
         }
       };
-    }
+    };
 
     truncateLabel(text, size) {
       const node = d3.select(text).node();
@@ -72,7 +65,7 @@ export default function AxisLabelsFactory() {
         str = str.substr(0, endChar) + '...';
       }
       return str;
-    }
+    };
 
     truncateLabels() {
       const self = this;
@@ -85,13 +78,13 @@ export default function AxisLabelsFactory() {
           return self.truncateLabel(this, config.get('labels.truncate'));
         });
       };
-    }
+    };
 
     filterAxisLabels() {
       const self = this;
       const config = this.axisConfig;
       let startPos = 0;
-      const padding = 1.1;
+      let padding = 1.1;
 
       return function (selection) {
         if (!config.get('labels.filter')) return;
@@ -113,7 +106,7 @@ export default function AxisLabelsFactory() {
           }
         });
       };
-    }
+    };
 
     draw() {
       const self = this;
@@ -133,8 +126,8 @@ export default function AxisLabelsFactory() {
           selection.call(self.filterAxisLabels());
         });
       };
-    }
+    };
   }
 
   return AxisLabels;
-}
+};

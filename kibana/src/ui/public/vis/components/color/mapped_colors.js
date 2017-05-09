@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import d3 from 'd3';
 import VislibComponentsColorColorPaletteProvider from './color_palette';
-define(() => (Private, config, $rootScope) => {
+define((require) => (Private, config, $rootScope) => {
   const createColorPalette = Private(VislibComponentsColorColorPaletteProvider);
 
   const standardizeColor = (color) => d3.rgb(color).toString();

@@ -57,7 +57,7 @@ const links = [];
  * @param  {AngularModule} module - the module to extend
  * @return {undefined}
  */
-export function link(module) {
+function link(module) {
   // as modules are defined they will be set as requirements for this app
   links.push(module);
 
@@ -78,7 +78,7 @@ export function link(module) {
  * @param  {array[string]} [requires=[]] - the other modules this module requires
  * @return {AngularModule}
  */
-export function get(moduleName, requires) {
+function get(moduleName, requires) {
   let module = existingModules[moduleName];
 
   if (module === void 0) {
@@ -101,7 +101,7 @@ export function get(moduleName, requires) {
   return module;
 }
 
-export function close(moduleName) {
+function close(moduleName) {
   const module = existingModules[moduleName];
 
   // already closed
@@ -120,4 +120,8 @@ export function close(moduleName) {
   delete existingModules[moduleName];
 }
 
-export default { link, get, close };
+export default {
+  link: link,
+  get: get,
+  close: close
+};

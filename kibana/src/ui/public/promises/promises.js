@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import uiModules from 'ui/modules';
 
-const module = uiModules.get('kibana');
+let module = uiModules.get('kibana');
 
 // Provides a tiny subset of the excelent API from
 // bluebird, reimplemented using the $q service
@@ -9,7 +9,7 @@ module.service('Promise', function ($q, $timeout) {
   function Promise(fn) {
     if (typeof this === 'undefined') throw new Error('Promise constructor must be called with "new"');
 
-    const defer = $q.defer();
+    let defer = $q.defer();
     try {
       fn(defer.resolve, defer.reject);
     } catch (e) {
@@ -20,12 +20,12 @@ module.service('Promise', function ($q, $timeout) {
 
   Promise.all = Promise.props = $q.all;
   Promise.resolve = function (val) {
-    const defer = $q.defer();
+    let defer = $q.defer();
     defer.resolve(val);
     return defer.promise;
   };
   Promise.reject = function (reason) {
-    const defer = $q.defer();
+    let defer = $q.defer();
     defer.reject(reason);
     return defer.promise;
   };
@@ -36,7 +36,7 @@ module.service('Promise', function ($q, $timeout) {
   };
   Promise.method = function (fn) {
     return function () {
-      const args = Array.prototype.slice.call(arguments);
+      let args = Array.prototype.slice.call(arguments);
       return Promise.try(fn, args, this);
     };
   };
@@ -51,7 +51,7 @@ module.service('Promise', function ($q, $timeout) {
     }));
   };
   Promise.each = function (arr, fn) {
-    const queue = arr.slice(0);
+    let queue = arr.slice(0);
     let i = 0;
     return (function next() {
       if (!queue.length) return arr;
@@ -64,7 +64,7 @@ module.service('Promise', function ($q, $timeout) {
     return obj && typeof obj.then === 'function';
   };
   Promise.halt = _.once(function () {
-    const promise = new Promise();
+    let promise = new Promise();
     promise.then = _.constant(promise);
     promise.catch = _.constant(promise);
     return promise;
@@ -93,13 +93,6 @@ module.service('Promise', function ($q, $timeout) {
         else if (results.length > 1) resolve(results);
         else resolve(results[0]);
       });
-    });
-  };
-  Promise.race = function (iterable) {
-    return new Promise((resolve, reject) => {
-      for (const i of iterable) {
-        Promise.resolve(i).then(resolve, reject);
-      }
     });
   };
 
@@ -162,7 +155,7 @@ module.factory('PromiseEmitter', function (Promise) {
    * @return {Promise}
    */
   function PromiseEmitter(fn, handler) {
-    const prom = new Promise(fn);
+    let prom = new Promise(fn);
 
     if (!handler) return prom;
 

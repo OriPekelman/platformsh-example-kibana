@@ -4,7 +4,7 @@
  *
  * This is programatically created and updated, do not modify
  *
- * context: {"env":"production","urlBasePath":"","kbnVersion":"5.4.0","buildNum":15063}
+ * context: {"env":"production","urlBasePath":"","sourceMaps":false,"kbnVersion":"5.2.2","buildNum":14723}
  * includes code from:
  *  - console@kibana
  *  - elasticsearch@kibana
@@ -13,7 +13,6 @@
  *  - kibana@kibana
  *  - markdown_vis@kibana
  *  - metric_vis@kibana
- *  - metrics@kibana
  *  - spy_modes@kibana
  *  - status_page@kibana
  *  - table_vis@kibana

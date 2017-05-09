@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { ContainerTooSmall } from 'ui/errors';
+import errors from 'ui/errors';
 
 export default function ErrorHandlerFactory() {
 
@@ -28,10 +28,10 @@ export default function ErrorHandlerFactory() {
       const badHeight = _.isNaN(height) || height <= 0;
 
       if (badWidth || badHeight) {
-        throw new ContainerTooSmall();
+        throw new errors.ContainerTooSmall();
       }
-    }
+    };
   }
 
   return ErrorHandler;
-}
+};

@@ -2,25 +2,25 @@ import _ from 'lodash';
 import AggResponsePointSeriesGetPointProvider from 'ui/agg_response/point_series/_get_point';
 import AggResponsePointSeriesAddToSiriProvider from 'ui/agg_response/point_series/_add_to_siri';
 export default function PointSeriesGetSeries(Private) {
-  const getPoint = Private(AggResponsePointSeriesGetPointProvider);
-  const addToSiri = Private(AggResponsePointSeriesAddToSiriProvider);
+  let getPoint = Private(AggResponsePointSeriesGetPointProvider);
+  let addToSiri = Private(AggResponsePointSeriesAddToSiriProvider);
 
   return function getSeries(rows, chart) {
-    const aspects = chart.aspects;
-    const multiY = _.isArray(aspects.y);
-    const yScale = chart.yScale;
-    const partGetPoint = _.partial(getPoint, aspects.x, aspects.series, yScale);
+    let aspects = chart.aspects;
+    let multiY = _.isArray(aspects.y);
+    let yScale = chart.yScale;
+    let partGetPoint = _.partial(getPoint, aspects.x, aspects.series, yScale);
 
     let series = _(rows)
     .transform(function (series, row) {
       if (!multiY) {
-        const point = partGetPoint(row, aspects.y, aspects.z);
-        if (point) addToSiri(series, point, point.series, point.series, aspects.y.agg);
+        let point = partGetPoint(row, aspects.y, aspects.z);
+        if (point) addToSiri(series, point, point.series);
         return;
       }
 
       aspects.y.forEach(function (y) {
-        const point = partGetPoint(row, y, aspects.z);
+        let point = partGetPoint(row, y, aspects.z);
         if (!point) return;
 
         // use the point's y-axis as it's series by default,
@@ -35,7 +35,7 @@ export default function PointSeriesGetSeries(Private) {
           seriesLabel = prefix + seriesLabel;
         }
 
-        addToSiri(series, point, seriesId, seriesLabel, y.agg);
+        addToSiri(series, point, seriesId, seriesLabel);
       });
 
     }, new Map())
@@ -44,11 +44,11 @@ export default function PointSeriesGetSeries(Private) {
 
     if (multiY) {
       series = _.sortBy(series, function (siri) {
-        const firstVal = siri.values[0];
+        let firstVal = siri.values[0];
         let y;
 
         if (firstVal) {
-          const agg = firstVal.aggConfigResult.aggConfig;
+          let agg = firstVal.aggConfigResult.aggConfig;
           y = _.find(aspects.y, function (y) {
             return y.agg === agg;
           });
@@ -60,4 +60,4 @@ export default function PointSeriesGetSeries(Private) {
 
     return series;
   };
-}
+};

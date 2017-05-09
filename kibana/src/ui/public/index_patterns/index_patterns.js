@@ -1,5 +1,6 @@
 import 'ui/filters/short_dots';
-import { IndexPatternMissingIndices } from 'ui/errors';
+import _ from 'lodash';
+import errors from 'ui/errors';
 import IndexPatternsIndexPatternProvider from 'ui/index_patterns/_index_pattern';
 import IndexPatternsPatternCacheProvider from 'ui/index_patterns/_pattern_cache';
 import IndexPatternsGetIdsProvider from 'ui/index_patterns/_get_ids';
@@ -8,18 +9,20 @@ import IndexPatternsMapperProvider from 'ui/index_patterns/_mapper';
 import IndexPatternsPatternToWildcardProvider from 'ui/index_patterns/_pattern_to_wildcard';
 import RegistryFieldFormatsProvider from 'ui/registry/field_formats';
 import uiModules from 'ui/modules';
-const module = uiModules.get('kibana/index_patterns');
+let module = uiModules.get('kibana/index_patterns');
 
 function IndexPatternsProvider(esAdmin, Notifier, Private, Promise, kbnIndex) {
-  const self = this;
+  let self = this;
 
-  const IndexPattern = Private(IndexPatternsIndexPatternProvider);
-  const patternCache = Private(IndexPatternsPatternCacheProvider);
+  let IndexPattern = Private(IndexPatternsIndexPatternProvider);
+  let patternCache = Private(IndexPatternsPatternCacheProvider);
+
+  let notify = new Notifier({ location: 'IndexPatterns Service'});
 
   self.get = function (id) {
     if (!id) return self.make();
 
-    const cache = patternCache.get(id);
+    let cache = patternCache.get(id);
     return cache || patternCache.set(id, self.make(id));
   };
 
@@ -39,7 +42,7 @@ function IndexPatternsProvider(esAdmin, Notifier, Private, Promise, kbnIndex) {
   };
 
   self.errors = {
-    MissingIndices: IndexPatternMissingIndices
+    MissingIndices: errors.IndexPatternMissingIndices
   };
 
   self.cache = patternCache;

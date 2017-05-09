@@ -1,24 +1,18 @@
 'use strict';
 
-var _lodash = require('lodash');
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-var _lodash2 = _interopRequireDefault(_lodash);
+var _libAgg_response_to_series_list = require('./lib/agg_response_to_series_list');
 
-var _datasource = require('../../lib/classes/datasource');
+var _libAgg_response_to_series_list2 = _interopRequireDefault(_libAgg_response_to_series_list);
 
-var _datasource2 = _interopRequireDefault(_datasource);
+var _ = require('lodash');
+var moment = require('moment');
+var toMS = require('../../lib/to_milliseconds.js');
+var Datasource = require('../../lib/classes/datasource');
+var buildRequest = require('./lib/build_request');
 
-var _build_request = require('./lib/build_request');
-
-var _build_request2 = _interopRequireDefault(_build_request);
-
-var _agg_response_to_series_list = require('./lib/agg_response_to_series_list');
-
-var _agg_response_to_series_list2 = _interopRequireDefault(_agg_response_to_series_list);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-module.exports = new _datasource2.default('es', {
+module.exports = new Datasource('es', {
   args: [{
     name: 'q',
     types: ['string', 'null'],
@@ -55,7 +49,7 @@ module.exports = new _datasource2.default('es', {
   aliases: ['elasticsearch'],
   fn: function esFn(args, tlConfig) {
 
-    const config = _lodash2.default.defaults(_lodash2.default.clone(args.byName), {
+    var config = _.defaults(_.clone(args.byName), {
       q: '*',
       metric: ['count'],
       index: tlConfig.settings['timelion:es.default_index'],
@@ -65,18 +59,17 @@ module.exports = new _datasource2.default('es', {
       fit: 'nearest'
     });
 
-    var _tlConfig$server$plug = tlConfig.server.plugins.elasticsearch.getCluster('data');
+    var _tlConfig$server$plugins$elasticsearch$getCluster = tlConfig.server.plugins.elasticsearch.getCluster('data');
 
-    const callWithRequest = _tlConfig$server$plug.callWithRequest;
+    var callWithRequest = _tlConfig$server$plugins$elasticsearch$getCluster.callWithRequest;
 
-
-    const body = (0, _build_request2.default)(config, tlConfig);
+    var body = buildRequest(config, tlConfig);
 
     return callWithRequest(tlConfig.request, 'search', body).then(function (resp) {
       if (!resp._shards.total) throw new Error('Elasticsearch index not found: ' + config.index);
       return {
         type: 'seriesList',
-        list: (0, _agg_response_to_series_list2.default)(resp.aggregations, config)
+        list: (0, _libAgg_response_to_series_list2['default'])(resp.aggregations, config)
       };
     });
   }

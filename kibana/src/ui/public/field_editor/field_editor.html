@@ -16,7 +16,7 @@
       class="form-control"
       data-test-subj="editorFieldName">
   </div>
-  <div ng-if="editor.creating && editor.existingFieldNames.includes(editor.field.name)" class="hintbox">
+  <div ng-if="editor.creating && editor.indexPattern.fields.byName[editor.field.name]" class="hintbox">
     <p>
       <i class="fa fa-danger text-danger"></i>
       <strong>Mapping Conflict:</strong>
@@ -228,7 +228,8 @@
     <button
       type="button"
       ng-if="editor.field.scripted && !editor.creating"
-      ng-click="editor.delete()"
+      confirm-click="editor.delete()"
+      confirmation="Are you sure want to delete '{{ editor.field.name }}'? This action is irreversible!"
       aria-label="Delete"
       class="btn btn-danger">
       Delete Field

@@ -2,7 +2,6 @@ import 'ui/directives/css_truncate';
 import 'ui/directives/field_name';
 import 'ui/filters/unique';
 import 'plugins/kibana/discover/components/field_chooser/discover_field';
-import 'angular-ui-select';
 import _ from 'lodash';
 import $ from 'jquery';
 import rison from 'rison-node';
@@ -26,9 +25,7 @@ app.directive('discFieldChooser', function ($location, globalState, config, $rou
       state: '=',
       indexPattern: '=',
       indexPatternList: '=',
-      onAddField: '=',
-      onAddFilter: '=',
-      onRemoveField: '=',
+      updateFilterInQuery: '=filter'
     },
     template: fieldChooserTemplate,
     link: function ($scope) {
@@ -54,9 +51,9 @@ app.directive('discFieldChooser', function ($location, globalState, config, $rou
           missing: true
         },
         boolOpts: [
-          { label: 'any', value: undefined },
-          { label: 'yes', value: true },
-          { label: 'no', value: false }
+          {label: 'any', value: undefined },
+          {label: 'yes', value: true },
+          {label: 'no', value: false }
         ],
         toggleVal: function (name, def) {
           if (filter.vals[name] !== def) filter.vals[name] = def;
@@ -99,6 +96,11 @@ app.directive('discFieldChooser', function ($location, globalState, config, $rou
       $scope.$watchCollection('filter.vals', function () {
         filter.active = filter.getActive();
       });
+
+      $scope.toggle = function (fieldName) {
+        $scope.increaseFieldCounter(fieldName);
+        _.toggleInOut($scope.columns, fieldName);
+      };
 
       $scope.$watchMulti([
         '[]fieldCounts',
@@ -153,7 +155,7 @@ app.directive('discFieldChooser', function ($location, globalState, config, $rou
         $scope.indexPattern.popularizeField(fieldName, 1);
       };
 
-      function getVisualizeUrl(field) {
+      $scope.vizLocation = function (field) {
         if (!$scope.state) {return '';}
 
         let agg = {};
@@ -202,26 +204,21 @@ app.directive('discFieldChooser', function ($location, globalState, config, $rou
               type: type,
               aggs: [
                 agg,
-                { schema: 'metric', type: 'count', 'id': '2' }
+                {schema: 'metric', type: 'count', 'id': '2'}
               ]
             }
           })
         }));
-      }
+      };
 
-      $scope.computeDetails = function (field, recompute) {
+      $scope.details = function (field, recompute) {
         if (_.isUndefined(field.details) || recompute) {
-          field.details = Object.assign(
-            {
-              visualizeUrl: field.visualizable ? getVisualizeUrl(field) : null,
-            },
-            fieldCalculator.getFieldValueCounts({
-              hits: $scope.hits,
-              field: field,
-              count: 5,
-              grouped: false
-            }),
-          );
+          field.details = fieldCalculator.getFieldValueCounts({
+            hits: $scope.hits,
+            field: field,
+            count: 5,
+            grouped: false
+          });
           _.each(field.details.buckets, function (bucket) {
             bucket.display = field.format.convert(bucket.value);
           });

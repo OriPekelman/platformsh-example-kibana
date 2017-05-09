@@ -1,21 +1,4 @@
 /**
- * A configuration object for a top nav component.
- * @typedef {Object} KbnTopNavConfig
- * @type Object
- * @property {string} key - A display string which will be shown in the top nav for this option.
- * @property {string} [description] - optional, used for the screen-reader description of this
- *  menu. Defaults to "Toggle ${key} view" for templated menu items and just "${key}" for
- *  programmatic menu items
- * @property {string} testId - for testing purposes, can be used to retrieve this item.
- * @property {Object} [template] - an html template that will be shown when this item is clicked.
- *  If template is not given then run should be supplied.
- * @property {function} [run] - an optional function that will be run when the nav item is clicked.
- *  Either this or template parameter should be specified.
- * @param {boolean} [hideButton] - optional, set to true to prevent a menu item from being created.
- *  This allow injecting templates into the navbar that don't have an associated template
- */
-
-/**
  * kbnTopNav directive
  *
  * The top section that shows the timepicker, load, share and save dialogues.
@@ -26,11 +9,27 @@
  *
  * Menu items/templates are passed to the kbnTopNav via the config attribute
  * and should be defined as an array of objects. Each object represents a menu
- * item and should be of type kbnTopNavConfig.
+ * item and should have the following properties:
  *
- * @param {Array<kbnTopNavConfig>|KbnTopNavController} config
+ * @param {Array<Object>|KbnTopNavController} config
+ * @param {string} config[].key
+ *        - the uniq key for this menu item.
+ * @param {string} [config[].label]
+ *        - optional, string that will be displayed for the menu button.
+ *        Defaults to the key
+ * @param {string} [config[].description]
+ *        - optional, used for the screen-reader description of this menu
+ *        item, defaults to "Toggle ${key} view" for templated menu items
+ *        and just "${key}" for programatic menu items
+ * @param {boolean} [config[].hideButton]
+ *        - optional, set to true to prevent a menu item from being created.
+ *        This allow injecting templates into the navbar that don't have
+ *        an associated template
+ * @param {function} [config[].run]
+ *        - optional, function to call when the menu item is clicked, defaults
+ *        to toggling the template
  *
- * Programmatic control of the navbar can be achieved one of two ways
+ * Programatic control of the navbar can be acheived one of two ways
  */
 
 import _ from 'lodash';
@@ -41,7 +40,6 @@ import uiModules from 'ui/modules';
 import template from './kbn_top_nav.html';
 import KbnTopNavControllerProvider from './kbn_top_nav_controller';
 import RegistryNavbarExtensionsProvider from 'ui/registry/navbar_extensions';
-import './bread_crumbs/bread_crumbs';
 
 const module = uiModules.get('kibana');
 
@@ -90,7 +88,7 @@ module.directive('kbnTopNav', function (Private) {
 
         if (!transcludedContentContainer) {
           return;
-        }
+        };
 
         const transcludedContent = transcludedContentContainer.children;
         _.forEach(transcludedContent, transcludedItem => {
@@ -98,42 +96,22 @@ module.directive('kbnTopNav', function (Private) {
           $scope.transcludes[transclusionSlot] = transcludedItem;
         });
       });
+
       const extensions = getNavbarExtensions($attrs.name);
-
-      function initTopNav(newConfig, oldConfig) {
-        if (_.isEqual(oldConfig, newConfig)) return;
-
-        if (newConfig instanceof KbnTopNavController) {
-          newConfig.addItems(extensions);
-          $scope.kbnTopNav = new KbnTopNavController(newConfig);
-        } else {
-          newConfig = newConfig.concat(extensions);
-          $scope.kbnTopNav = new KbnTopNavController(newConfig);
-        }
-        $scope.kbnTopNav._link($scope, $element);
+      let controls = _.get($scope, $attrs.config, []);
+      if (controls instanceof KbnTopNavController) {
+        controls.addItems(extensions);
+      } else {
+        controls = controls.concat(extensions);
       }
 
-      const getTopNavConfig = () => {
-        return _.get($scope, $attrs.config, []);
-      };
-
-      const topNavConfig = getTopNavConfig();
-
-      // Because we store $scope and $element on the kbnTopNavController, if this was passed an instance
-      // instead of a configuration, it will enter an infinite digest loop. Only watch for updates if a config
-      // was passed instead. This is ugly, but without diving into a larger refactor, the smallest temporary solution
-      // to get dynamic nav updates working for dashboard. Console is currently the only place that passes a
-      // KbnTopNavController (and a slew of tests).
-      if (!(topNavConfig instanceof KbnTopNavController)) {
-        $scope.$watch(getTopNavConfig, initTopNav, true);
-      }
-
-      initTopNav(topNavConfig, null);
+      $scope.kbnTopNav = new KbnTopNavController(controls);
+      $scope.kbnTopNav._link($scope, $element);
 
       return $scope.kbnTopNav;
     },
 
-    link(scope) {
+    link(scope, element) {
       // These are the slots where transcluded elements can go.
       const transclusionSlotNames = ['topLeftCorner', 'bottomRow'];
 

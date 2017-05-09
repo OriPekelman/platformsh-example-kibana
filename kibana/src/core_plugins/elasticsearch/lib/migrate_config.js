@@ -1,22 +1,21 @@
 'use strict';
 
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
 var _upgrade_config = require('./upgrade_config');
 
 var _upgrade_config2 = _interopRequireDefault(_upgrade_config);
 
 var _kibana_index_mappings = require('./kibana_index_mappings');
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
 module.exports = function (server) {
-  const config = server.config();
+  var config = server.config();
 
-  var _server$plugins$elast = server.plugins.elasticsearch.getCluster('admin');
+  var _server$plugins$elasticsearch$getCluster = server.plugins.elasticsearch.getCluster('admin');
 
-  const callWithInternalUser = _server$plugins$elast.callWithInternalUser;
+  var callWithInternalUser = _server$plugins$elasticsearch$getCluster.callWithInternalUser;
 
-
-  const options = {
+  var options = {
     index: config.get('kibana.index'),
     type: 'config',
     body: {
@@ -30,5 +29,5 @@ module.exports = function (server) {
     }
   };
 
-  return callWithInternalUser('search', options).then((0, _upgrade_config2.default)(server));
+  return callWithInternalUser('search', options).then((0, _upgrade_config2['default'])(server));
 };

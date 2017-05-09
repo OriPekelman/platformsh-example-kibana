@@ -1,7 +1,7 @@
 import AggTypesMetricsMetricAggTypeProvider from 'ui/agg_types/metrics/metric_agg_type';
 
 export default function AggTypeMetricMinProvider(Private) {
-  const MetricAggType = Private(AggTypesMetricsMetricAggTypeProvider);
+  let MetricAggType = Private(AggTypesMetricsMetricAggTypeProvider);
 
   return new MetricAggType({
     name: 'min',
@@ -16,4 +16,4 @@ export default function AggTypeMetricMinProvider(Private) {
       }
     ]
   });
-}
+};

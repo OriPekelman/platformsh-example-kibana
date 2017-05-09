@@ -1,3 +1,9 @@
+/**
+ * @name DocSource
+ */
+
+import _ from 'lodash';
+
 import AbstractDocSourceProvider from './_abstract_doc_source';
 import DocStrategyProvider from '../fetch/strategy/doc_data';
 import DocRequestProvider from '../fetch/request/doc_data';
@@ -18,4 +24,4 @@ export default function DocSourceFactory(Private) {
   }
 
   return DocSource;
-}
+};

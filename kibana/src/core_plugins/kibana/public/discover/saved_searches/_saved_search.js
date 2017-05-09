@@ -39,9 +39,6 @@ module.factory('SavedSearch', function (courier) {
     version: 'integer'
   };
 
-  // Order these fields to the top, the rest are alphabetical
-  SavedSearch.fieldOrder = ['title', 'description'];
-
   SavedSearch.searchSource = true;
 
   return SavedSearch;

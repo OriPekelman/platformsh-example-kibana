@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import $ from 'jquery';
 import VislibComponentsColorColorPaletteProvider from 'ui/vis/components/color/color_palette';
 import uiModules from 'ui/modules';
@@ -12,10 +13,11 @@ uiModules
       item: '=',
       list: '='
     },
-    link: function ($scope, $el) {
+    link: function ($scope, $el, attr) {
       $scope.$watchCollection('list', function () {
         if (!$scope.list || !$scope.item) return;
 
+        const item = $scope.item;
         const index = $scope.list.indexOf($scope.item);
         const bars = $scope.list.slice(0, index + 1);
         const colors = getColors(bars.length);

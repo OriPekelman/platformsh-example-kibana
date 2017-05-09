@@ -1,5 +1,6 @@
 import DomLocationProvider from 'ui/dom_location';
 import { parse } from 'url';
+import { bindKey } from 'lodash';
 import uiModules from 'ui/modules';
 import appSwitcherTemplate from './app_switcher.html';
 

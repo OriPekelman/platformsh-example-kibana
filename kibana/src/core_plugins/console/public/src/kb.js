@@ -1,6 +1,7 @@
 let $ = require('jquery');
 let _ = require('lodash');
 let mappings = require('./mappings');
+let es = require('./es');
 let Api = require('./kb/api');
 let autocomplete_engine = require('./autocomplete/engine');
 
@@ -16,7 +17,7 @@ function IndexAutocompleteComponent(name, parent, multi_valued) {
 
 IndexAutocompleteComponent.prototype = _.create(
   autocomplete_engine.ListComponent.prototype,
-  { 'constructor': IndexAutocompleteComponent });
+  {'constructor': IndexAutocompleteComponent});
 
 (function (cls) {
   cls.validateTokens = function (tokens) {
@@ -46,7 +47,7 @@ function TypeAutocompleteComponent(name, parent, multi_valued) {
 
 TypeAutocompleteComponent.prototype = _.create(
   autocomplete_engine.ListComponent.prototype,
-  { 'constructor': TypeAutocompleteComponent });
+  {'constructor': TypeAutocompleteComponent});
 
 (function (cls) {
   cls.validateTokens = function (tokens) {
@@ -68,7 +69,7 @@ TypeAutocompleteComponent.prototype = _.create(
 
 function FieldGenerator(context) {
   return _.map(mappings.getFields(context.indices, context.types), function (field) {
-    return { name: field.name, meta: field.type };
+    return {name: field.name, meta: field.type};
   });
 }
 
@@ -78,7 +79,7 @@ function FieldAutocompleteComponent(name, parent, multi_valued) {
 
 FieldAutocompleteComponent.prototype = _.create(
   autocomplete_engine.ListComponent.prototype,
-  { 'constructor': FieldAutocompleteComponent });
+  {'constructor': FieldAutocompleteComponent});
 
 (function (cls) {
   cls.validateTokens = function (tokens) {
@@ -108,7 +109,7 @@ function IdAutocompleteComponent(name, parent, multi) {
 
 IdAutocompleteComponent.prototype = _.create(
   autocomplete_engine.SharedComponent.prototype,
-  { 'constructor': IdAutocompleteComponent });
+  {'constructor': IdAutocompleteComponent});
 
 (function (cls) {
   cls.match = function (token, context, editor) {
@@ -133,38 +134,46 @@ IdAutocompleteComponent.prototype = _.create(
 
 var parametrizedComponentFactories = {
 
-  'index': function (name, parent) {
+  'index': function (name, parent, endpoint) {
     return new IndexAutocompleteComponent(name, parent, false);
   },
-  'indices': function (name, parent) {
+  'indices': function (name, parent, endpoint) {
     return new IndexAutocompleteComponent(name, parent, true);
   },
-  'type': function (name, parent) {
+  'type': function (name, parent, endpoint) {
     return new TypeAutocompleteComponent(name, parent, false);
   },
-  'types': function (name, parent) {
+  'types': function (name, parent, endpoint) {
     return new TypeAutocompleteComponent(name, parent, true);
   },
-  'id': function (name, parent) {
+  'id': function (name, parent, endpoint) {
     return new IdAutocompleteComponent(name, parent);
   },
-  'ids': function (name, parent) {
+  'ids': function (name, parent, endpoint) {
     return new IdAutocompleteComponent(name, parent, true);
   },
-  'fields': function (name, parent) {
+  'fields': function (name, parent, endpoint) {
     return new FieldAutocompleteComponent(name, parent, true);
   },
-  'field': function (name, parent) {
+  'field': function (name, parent, endpoint) {
     return new FieldAutocompleteComponent(name, parent, false);
   },
-  'nodes': function (name, parent) {
+  'nodes': function (name, parent, endpoint) {
     return new autocomplete_engine.ListComponent(name, ["_local", "_master", "data:true", "data:false",
       "master:true", "master:false"], parent)
   },
-  'node': function (name, parent) {
+  'node': function (name, parent, endpoint) {
     return new autocomplete_engine.ListComponent(name, [], parent, false)
   }
 };
+
+
+function expandAliases(indices) {
+  if (indices && indices.length > 0) {
+    indices = mappings.expandAliases(indices);
+  }
+  return indices;
+}
 
 function getUnmatchedEndpointComponents() {
   return ACTIVE_API.getUnmatchedEndpointComponents();
@@ -215,7 +224,7 @@ function setActiveApi(api) {
         dataType: "json", // disable automatic guessing
       }
     ).then(
-      function (data) {
+      function (data, textStatus, jqXHR) {
         setActiveApi(loadApisFromJson(data));
       },
       function (jqXHR) {

@@ -1,9 +1,12 @@
+let ace = require('ace');
 let $ = require('jquery');
-require('ace');
-require('ace/ext-searchbox');
+let ZeroClipboard = require('zeroclip');
+let ext_searchbox = require('ace/ext-searchbox');
 let Autocomplete = require('./autocomplete');
+let mappings = require('./mappings');
 let SenseEditor = require('./sense_editor/editor');
 let settings = require('./settings');
+let storage = require('./storage');
 let utils = require('./utils');
 let es = require('./es');
 let history = require('./history');
@@ -23,21 +26,21 @@ export function initializeInput($el, $actionsEl, $copyAsCurlEl, output) {
 
   input.commands.addCommand({
     name: 'auto indent request',
-    bindKey: { win: 'Ctrl-I', mac: 'Command-I' },
+    bindKey: {win: 'Ctrl-I', mac: 'Command-I'},
     exec: function () {
       input.autoIndent();
     }
   });
   input.commands.addCommand({
     name: 'move to previous request start or end',
-    bindKey: { win: 'Ctrl-Up', mac: 'Command-Up' },
+    bindKey: {win: 'Ctrl-Up', mac: 'Command-Up'},
     exec: function () {
       input.moveToPreviousRequestEdge()
     }
   });
   input.commands.addCommand({
     name: 'move to next request start or end',
-    bindKey: { win: 'Ctrl-Down', mac: 'Command-Down' },
+    bindKey: {win: 'Ctrl-Down', mac: 'Command-Down'},
     exec: function () {
       input.moveToNextRequestEdge()
     }
@@ -46,32 +49,48 @@ export function initializeInput($el, $actionsEl, $copyAsCurlEl, output) {
 
   /**
    * COPY AS CURL
+   *
+   * Since the copy functionality is powered by a flash movie (via ZeroClipboard)
+   * the only way to trigger the copy is with a litteral mouseclick from the user.
+   *
+   * The original shortcut will now just open the menu and highlight the
+   *
    */
-  (function setupClipboard() {
-      function copyText(text) {
-        var node = $(`<textarea style="height:1px"></textarea`)
-        .val(text)
-        .appendTo(document.body)
-        .select();
-        document.execCommand('copy');
-        node.remove()
-      }
+  var zc = (function setupZeroClipboard() {
+    var zc = new ZeroClipboard($copyAsCurlEl); // the ZeroClipboard instance
 
-      if (!document.queryCommandSupported('copy')) {
-        $copyAsCurlEl.hide();
-        return;
+    zc.on('wrongflash noflash', function () {
+      if (!storage.get('flash_warning_shown')) {
+        alert('Console needs flash version 10.0 or greater in order to provide "Copy as cURL" functionality');
+        storage.set('flash_warning_shown', 'true');
       }
+      $copyAsCurlEl.hide();
+    });
 
-      $copyAsCurlEl.click(() => {
-        copyText($copyAsCurlEl.attr('data-clipboard-text'))
-      });
+    zc.on('ready', function () {
+      function setupCopyButton(cb) {
+        cb = typeof cb === 'function' ? cb : $.noop;
+        $copyAsCurlEl.css('visibility', 'hidden');
+        input.getRequestsAsCURL(function (curl) {
+          $copyAsCurlEl.attr('data-clipboard-text', curl);
+          $copyAsCurlEl.css('visibility', 'visible');
+          cb();
+        });
+      }
 
       input.$actions.on('mouseenter', function () {
-        if ($(this).hasClass('open')) return;
-        input.getRequestsAsCURL(text => {
-          $copyAsCurlEl.attr('data-clipboard-text', text);
-        });
+        if (!$(this).hasClass('open')) {
+          setupCopyButton();
+        }
       });
+    });
+
+    zc.on('complete', function () {
+      $copyAsCurlEl.click();
+      input.focus();
+    });
+
+    return zc;
   }());
 
   /**
@@ -157,12 +176,6 @@ export function initializeInput($el, $actionsEl, $copyAsCurlEl, output) {
               }
             }
 
-            var warnings = xhr.getResponseHeader("warning");
-            if (warnings) {
-              var deprecationMessages = utils.extractDeprecationMessages(warnings);
-              value = deprecationMessages.join("\n") + "\n" + value;
-            }
-
             if (isMultiRequest) {
               value = "# " + req.method + " " + req.url + "\n" + value;
             }
@@ -213,7 +226,7 @@ export function initializeInput($el, $actionsEl, $copyAsCurlEl, output) {
 
   input.commands.addCommand({
     name: 'send to elasticsearch',
-    bindKey: { win: 'Ctrl-Enter', mac: 'Command-Enter' },
+    bindKey: {win: 'Ctrl-Enter', mac: 'Command-Enter'},
     exec: sendCurrentRequestToES
   });
 
@@ -231,8 +244,8 @@ export function initializeInput($el, $actionsEl, $copyAsCurlEl, output) {
   require('./input_resize')(input, output);
 
   return input;
-}
+};
 
 export default function getInput() {
   return input;
-}
+};

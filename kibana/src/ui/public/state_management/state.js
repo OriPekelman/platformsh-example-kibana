@@ -19,7 +19,7 @@ import {
   isStateHash,
 } from './state_storage';
 
-export default function StateProvider(Private, $rootScope, $location, config, kbnUrl) {
+export default function StateProvider(Private, $rootScope, $location, config) {
   const Events = Private(EventsProvider);
 
   _.class(State).inherits(Events);
@@ -121,7 +121,7 @@ export default function StateProvider(Private, $rootScope, $location, config, kb
 
     _.defaults(stash, this._defaults);
     // apply diff to state from stash, will change state in place via side effect
-    const diffResults = applyDiff(this, stash);
+    let diffResults = applyDiff(this, stash);
 
     if (diffResults.keys.length) {
       this.emit('fetch_with_changes', diffResults.keys);
@@ -134,7 +134,7 @@ export default function StateProvider(Private, $rootScope, $location, config, kb
    */
   State.prototype.save = function (replace) {
     let stash = this._readFromURL();
-    const state = this.toObject();
+    let state = this.toObject();
     replace = replace || false;
 
     if (!stash) {
@@ -143,14 +143,14 @@ export default function StateProvider(Private, $rootScope, $location, config, kb
     }
 
     // apply diff to state from stash, will change state in place via side effect
-    const diffResults = applyDiff(stash, _.defaults({}, state, this._defaults));
+    let diffResults = applyDiff(stash, _.defaults({}, state, this._defaults));
 
     if (diffResults.keys.length) {
       this.emit('save_with_changes', diffResults.keys);
     }
 
     // persist the state in the URL
-    const search = $location.search();
+    let search = $location.search();
     search[this._urlParam] = this.toQueryParam(state);
     if (replace) {
       $location.search(search).replace();
@@ -173,10 +173,9 @@ export default function StateProvider(Private, $rootScope, $location, config, kb
    * @returns {void}
    */
   State.prototype.reset = function () {
-    kbnUrl.removeParam(this.getQueryParamName());
     // apply diff to _attributes from defaults, this is side effecting so
     // it will change the state in place.
-    const diffResults = applyDiff(this, this._defaults);
+    let diffResults = applyDiff(this, this._defaults);
     if (diffResults.keys.length) {
       this.emit('reset_with_changes', diffResults.keys);
     }
@@ -276,4 +275,4 @@ export default function StateProvider(Private, $rootScope, $location, config, kb
 
   return State;
 
-}
+};

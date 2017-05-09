@@ -6,12 +6,12 @@ function ParamComponent(name, parent, description) {
   this.description = description;
 }
 
-ParamComponent.prototype = _.create(engine.ConstantComponent.prototype, { "constructor": ParamComponent });
+ParamComponent.prototype = _.create(engine.ConstantComponent.prototype, {"constructor": ParamComponent});
 module.exports.ParamComponent = ParamComponent;
 
 (function (cls) {
   cls.getTerms = function () {
-    var t = { name: this.name };
+    var t = {name: this.name};
     if (this.description === "__flag__") {
       t.meta = "flag"
     }
@@ -37,12 +37,13 @@ function UrlParams(description, defaults) {
   description = _.clone(description || {});
   _.defaults(description, defaults);
   _.each(description, function (p_description, param) {
-    var component = new ParamComponent(param, this.rootComponent, p_description);
+    var values, component;
+    component = new ParamComponent(param, this.rootComponent, p_description);
     if (_.isArray(p_description)) {
-      new engine.ListComponent(param, p_description, component);
+      values = new engine.ListComponent(param, p_description, component);
     }
     else if (p_description === "__flag__") {
-      new engine.ListComponent(param, ["true", "false"], component);
+      values = new engine.ListComponent(param, ["true", "false"], component);
     }
   }, this);
 

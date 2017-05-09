@@ -1,13 +1,9 @@
 import { parse, format } from 'url';
-import { isString } from 'lodash';
+import { startsWith, isString, find } from 'lodash';
 
 export default function (chrome, internals) {
   chrome.getNavLinks = function () {
     return internals.nav;
-  };
-
-  chrome.navLinkExists = (id) => {
-    return !!internals.nav.find(link => link.id === id);
   };
 
   chrome.getNavLinkById = (id) => {
@@ -23,10 +19,10 @@ export default function (chrome, internals) {
   };
 
   chrome.addBasePath = function (url) {
-    const isUrl = url && isString(url);
+    let isUrl = url && isString(url);
     if (!isUrl) return url;
 
-    const parsed = parse(url, true, true);
+    let parsed = parse(url, true, true);
     if (!parsed.host && parsed.pathname) {
       if (parsed.pathname[0] === '/') {
         parsed.pathname = chrome.getBasePath() + parsed.pathname;
@@ -114,7 +110,7 @@ export default function (chrome, internals) {
     const { appId, globalState: newGlobalState } = decodeKibanaUrl(url);
 
     for (const link of internals.nav) {
-      link.active = url.startsWith(link.subUrlBase);
+      link.active = startsWith(url, link.url);
       if (link.active) {
         setLastUrl(link, url);
         continue;
@@ -128,19 +124,14 @@ export default function (chrome, internals) {
     }
   };
 
-  function relativeToAbsolute(url) {
-    // convert all link urls to absolute urls
-    const a = document.createElement('a');
-    a.setAttribute('href', url);
-    return a.href;
-  }
-
   internals.nav.forEach(link => {
-    link.url = relativeToAbsolute(link.url);
-    link.subUrlBase = relativeToAbsolute(link.subUrlBase);
+    // convert all link urls to absolute urls
+    let a = document.createElement('a');
+    a.setAttribute('href', link.url);
+    link.url = a.href;
   });
 
   // simulate a possible change in url to initialize the
   // link.active and link.lastUrl properties
   internals.trackPossibleSubUrl(document.location.href);
-}
+};

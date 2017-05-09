@@ -2,8 +2,8 @@ import _ from 'lodash';
 import AggTypesAggParamsProvider from 'ui/agg_types/agg_params';
 import RegistryFieldFormatsProvider from 'ui/registry/field_formats';
 export default function AggTypeFactory(Private) {
-  const AggParams = Private(AggTypesAggParamsProvider);
-  const fieldFormats = Private(RegistryFieldFormatsProvider);
+  let AggParams = Private(AggTypesAggParamsProvider);
+  let fieldFormats = Private(RegistryFieldFormatsProvider);
 
   /**
    * Generic AggType Constructor
@@ -112,17 +112,6 @@ export default function AggTypeFactory(Private) {
 
     /**
      * Designed for multi-value metric aggs, this method can return a
-     * set of AggConfigs that should replace this aggConfig in requests
-     *
-     * @method getRequestAggs
-     * @returns {array[AggConfig]|undefined} - an array of aggConfig objects
-     *                                         that should replace this one,
-     *                                         or undefined
-     */
-    this.getRequestAggs = config.getRequestAggs || _.noop;
-
-    /**
-     * Designed for multi-value metric aggs, this method can return a
      * set of AggConfigs that should replace this aggConfig in result sets
      * that walk the AggConfig set.
      *
@@ -153,9 +142,9 @@ export default function AggTypeFactory(Private) {
    * @return {FieldFromat}
    */
   AggType.prototype.getFormat = function (agg) {
-    const field = agg.getField();
+    let field = agg.getField();
     return field ? field.format : fieldFormats.getDefaultInstance('string');
   };
 
   return AggType;
-}
+};

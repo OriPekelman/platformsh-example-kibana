@@ -1,5 +1,6 @@
 import _ from 'lodash';
-import { ContainerTooSmall } from 'ui/errors';
+import moment from 'moment';
+import errors from 'ui/errors';
 import VislibVisualizationsPointSeriesProvider from './_point_series';
 export default function ColumnChartFactory(Private) {
 
@@ -34,13 +35,11 @@ export default function ColumnChartFactory(Private) {
       const isTooltip = this.handler.visConfig.get('tooltip.show');
 
       const layer = svg.append('g')
-      .attr('class', 'series histogram')
+      .attr('class', 'series')
       .attr('clip-path', 'url(#' + this.baseChart.clipPathId + ')');
 
       const bars = layer.selectAll('rect')
-      .data(data.values.filter(function (d) {
-        return !_.isNull(d.y);
-      }));
+      .data(data.values);
 
       bars
       .exit()
@@ -50,8 +49,9 @@ export default function ColumnChartFactory(Private) {
       .enter()
       .append('rect')
       .attr('data-label', data.label)
-      .attr('fill', () => color(data.label))
-      .attr('stroke', () => color(data.label));
+      .attr('fill', () => {
+        return color(data.label);
+      });
 
       self.updateBars(bars);
 
@@ -61,7 +61,7 @@ export default function ColumnChartFactory(Private) {
       }
 
       return bars;
-    }
+    };
 
     /**
      * Determines whether bars are grouped or stacked and updates the D3
@@ -77,7 +77,7 @@ export default function ColumnChartFactory(Private) {
       }
       return this.addGroupedBars(bars);
 
-    }
+    };
 
     /**
      * Adds stacked bars to column chart visualization
@@ -91,6 +91,7 @@ export default function ColumnChartFactory(Private) {
       const yScale = this.getValueAxis().getScale();
       const isHorizontal = this.getCategoryAxis().axisConfig.isHorizontal();
       const isTimeScale = this.getCategoryAxis().axisConfig.isTimeDomain();
+      const height = yScale.range()[0];
       const yMin = yScale.domain()[0];
       const groupSpacingPercentage = 0.15;
       const groupCount = this.getGroupedCount();
@@ -98,9 +99,9 @@ export default function ColumnChartFactory(Private) {
 
       let barWidth;
       if (isTimeScale) {
-        const { min, interval } = this.handler.data.get('ordered');
+        const {min, interval} = this.handler.data.get('ordered');
         let groupWidth = xScale(min + interval) - xScale(min);
-        groupWidth = Math.abs(groupWidth);
+        if (!isHorizontal) groupWidth *= -1;
         const groupSpacing = groupWidth * groupSpacingPercentage;
 
         barWidth = (groupWidth - groupSpacing) / groupCount;
@@ -115,6 +116,7 @@ export default function ColumnChartFactory(Private) {
         if ((isHorizontal && d.y < 0) || (!isHorizontal && d.y > 0)) {
           return yScale(d.y0);
         }
+        /*if (!isHorizontal && d.y < 0) return yScale(d.y);*/
         return yScale(d.y0 + d.y);
       }
 
@@ -140,7 +142,7 @@ export default function ColumnChartFactory(Private) {
       .attr('height', isHorizontal ? heightFunc : widthFunc);
 
       return bars;
-    }
+    };
 
     /**
      * Adds grouped bars to column chart visualization
@@ -154,6 +156,7 @@ export default function ColumnChartFactory(Private) {
       const yScale = this.getValueAxis().getScale();
       const groupCount = this.getGroupedCount();
       const groupNum = this.getGroupedNum(this.chartData);
+      const height = yScale.range()[0];
       const groupSpacingPercentage = 0.15;
       const isTimeScale = this.getCategoryAxis().axisConfig.isTimeDomain();
       const isHorizontal = this.getCategoryAxis().axisConfig.isHorizontal();
@@ -162,9 +165,9 @@ export default function ColumnChartFactory(Private) {
       let barWidth;
 
       if (isTimeScale) {
-        const { min, interval } = this.handler.data.get('ordered');
+        const {min, interval} = this.handler.data.get('ordered');
         let groupWidth = xScale(min + interval) - xScale(min);
-        groupWidth = Math.abs(groupWidth);
+        if (!isHorizontal) groupWidth *= -1;
         const groupSpacing = groupWidth * groupSpacingPercentage;
 
         barWidth = (groupWidth - groupSpacing) / groupCount;
@@ -187,7 +190,7 @@ export default function ColumnChartFactory(Private) {
 
       function widthFunc() {
         if (barWidth < minWidth) {
-          throw new ContainerTooSmall();
+          throw new errors.ContainerTooSmall();
         }
 
         if (isTimeScale) {
@@ -209,7 +212,7 @@ export default function ColumnChartFactory(Private) {
       .attr('height', isHorizontal ? heightFunc : widthFunc);
 
       return bars;
-    }
+    };
 
     /**
      * Renders d3 visualization
@@ -235,8 +238,8 @@ export default function ColumnChartFactory(Private) {
           return svg;
         });
       };
-    }
+    };
   }
 
   return ColumnChart;
-}
+};

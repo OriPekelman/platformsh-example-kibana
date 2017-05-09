@@ -94,7 +94,7 @@ export class SavedObjectLoader {
 
     return this.esAdmin.search({
       index: this.kbnIndex,
-      type: this.lowercaseType,
+      type: this.type.toLowerCase(),
       body,
       size
     })

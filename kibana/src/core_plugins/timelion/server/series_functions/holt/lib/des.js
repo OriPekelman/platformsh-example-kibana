@@ -1,23 +1,21 @@
 'use strict';
 
-var _lodash = require('lodash');
-
-var _lodash2 = _interopRequireDefault(_lodash);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+var _ = require('lodash');
 
 module.exports = function des(points, alpha, beta) {
-  let level;
-  let prevLevel;
-  let trend;
-  let prevTrend;
-  let unknownCount = 0;
+  var level;
+  var prevLevel;
+  var trend;
+  var prevTrend;
+  var value;
+  var origin;
+  var unknownCount = 0;
 
   if (points.length < 2) {
     throw new Error('You need at least 2 points to use double exponential smoothing');
   }
 
-  const smoothedPoints = _lodash2.default.map(points, (point, i) => {
+  var smoothedPoints = _.map(points, function (point, i) {
     if (i === 0) {
       return point;
     }

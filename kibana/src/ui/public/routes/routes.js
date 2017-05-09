@@ -1,7 +1,7 @@
 import RouteManager from './route_manager';
 import 'angular-route/angular-route';
 import uiModules from 'ui/modules';
-const defaultRouteManager = new RouteManager();
+let defaultRouteManager = new RouteManager();
 
 module.exports = {
   ...defaultRouteManager,

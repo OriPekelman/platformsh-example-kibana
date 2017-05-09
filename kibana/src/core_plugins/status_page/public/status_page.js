@@ -1,5 +1,6 @@
 import _ from 'lodash';
 import notify from 'ui/notify';
+import $ from 'jquery';
 import 'ui/autoload/styles';
 import 'plugins/status_page/status_page_metric';
 import 'plugins/status_page/status_page.less';
@@ -8,7 +9,7 @@ import uiModules from 'ui/modules';
 
 const chrome = require('ui/chrome')
 .setRootTemplate(require('plugins/status_page/status_page.html'))
-.setRootController('ui', function ($http) {
+.setRootController('ui', function ($http, $scope) {
   const ui = this;
   ui.loading = false;
 
@@ -26,35 +27,7 @@ const chrome = require('ui/chrome')
       }
 
       const data = resp.data;
-      const metrics = data.metrics;
-      const v6Timestamp = _.get(metrics, 'last_updated');
-      if (v6Timestamp) {
-        const timestamp = new Date(v6Timestamp).getTime();
-        ui.metrics = {
-          heapTotal: [
-            [timestamp, _.get(metrics, 'process.mem.heap_max_in_bytes')]
-          ],
-          heapUsed: [
-            [timestamp, _.get(metrics, 'process.mem.heap_used_in_bytes')]
-          ],
-          load: [[timestamp, [
-            _.get(metrics, 'os.cpu.load_average.1m'),
-            _.get(metrics, 'os.cpu.load_average.5m'),
-            _.get(metrics, 'os.cpu.load_average.15m')
-          ]]],
-          responseTimeAvg: [
-            [timestamp, _.get(metrics, 'response_times.avg_in_millis')]
-          ],
-          responseTimeMax: [
-            [timestamp, _.get(metrics, 'response_times.max_in_millis')]
-          ],
-          requestsPerSecond: [
-            [timestamp, _.get(metrics, 'requests.total') * 1000 / _.get(metrics, 'collection_interval_in_millis')]
-          ]
-        };
-      } else {
-        ui.metrics = data.metrics;
-      }
+      ui.metrics = data.metrics;
       ui.name = data.name;
 
       ui.statuses = data.status.statuses;

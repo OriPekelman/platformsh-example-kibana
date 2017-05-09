@@ -1,16 +1,10 @@
 'use strict';
 
-var _alter = require('../lib/alter.js');
+var alter = require('../lib/alter.js');
+var util = require('util');
 
-var _alter2 = _interopRequireDefault(_alter);
-
-var _chainable = require('../lib/classes/chainable');
-
-var _chainable2 = _interopRequireDefault(_chainable);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-module.exports = new _chainable2.default('label', {
+var Chainable = require('../lib/classes/chainable');
+module.exports = new Chainable('label', {
   args: [{
     name: 'inputSeries',
     types: ['seriesList']
@@ -25,8 +19,8 @@ module.exports = new _chainable2.default('label', {
   }],
   help: 'Change the label of the series. Use %s reference the existing label',
   fn: function labelFn(args) {
-    const config = args.byName;
-    return (0, _alter2.default)(args, function (eachSeries) {
+    var config = args.byName;
+    return alter(args, function (eachSeries) {
       if (config.regex) {
         eachSeries.label = eachSeries.label.replace(new RegExp(config.regex), config.label);
       } else {

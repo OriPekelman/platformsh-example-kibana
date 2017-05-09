@@ -7,17 +7,17 @@ import fatalSplashScreen from 'ui/notify/partials/fatal_splash_screen.html';
 import 'ui/render_directive';
 /* eslint no-console: 0 */
 
-const notifs = [];
-const version = metadata.version;
-const buildNum = metadata.buildNum;
-const consoleGroups = ('group' in window.console) && ('groupCollapsed' in window.console) && ('groupEnd' in window.console);
+let notifs = [];
+let version = metadata.version;
+let buildNum = metadata.buildNum;
+let consoleGroups = ('group' in window.console) && ('groupCollapsed' in window.console) && ('groupEnd' in window.console);
 
-const log = _.bindKey(console, 'log');
+let log = _.bindKey(console, 'log');
 
 // used to identify the first call to fatal, set to false there
 let firstFatal = true;
 
-const fatalToastTemplate = (function lazyTemplate(tmpl) {
+let fatalToastTemplate = (function lazyTemplate(tmpl) {
   let compiled;
   return function (vars) {
     return (compiled || (compiled = _.template(tmpl)))(vars);
@@ -34,7 +34,7 @@ function now() {
 function closeNotif(notif, cb = _.noop, key) {
   return function () {
     // this === notif
-    const i = notifs.indexOf(notif);
+    let i = notifs.indexOf(notif);
     if (i !== -1) notifs.splice(i, 1);
 
     cancelTimer(notif);
@@ -188,7 +188,7 @@ Notifier.prototype.add = add;
 Notifier.prototype.set = set;
 
 function formatInfo() {
-  const info = [];
+  let info = [];
 
   if (!_.isUndefined(version)) {
     info.push(`Version: ${version}`);
@@ -213,7 +213,7 @@ function formatStack(err) {
  * Functionality to check that
  */
 function Notifier(opts) {
-  const self = this;
+  let self = this;
   opts = opts || {};
 
   // label type thing to say where notifications came from
@@ -291,7 +291,7 @@ Notifier.prototype.lifecycle = createGroupLogger('lifecycle', {
  * @return {function} - the wrapped function
  */
 Notifier.prototype.timed = function (name, fn) {
-  const self = this;
+  let self = this;
 
   if (typeof name === 'function') {
     fn = name;
@@ -299,8 +299,8 @@ Notifier.prototype.timed = function (name, fn) {
   }
 
   return function WrappedNotifierFunction() {
-    const cntx = this;
-    const args = arguments;
+    let cntx = this;
+    let args = arguments;
 
     return self.event(name, function () {
       return fn.apply(cntx, args);
@@ -336,7 +336,7 @@ Notifier.prototype._showFatal = function (err) {
     });
   }
 
-  const html = fatalToastTemplate({
+  let html = fatalToastTemplate({
     info: formatInfo(),
     msg: formatMsg(err, this.from),
     stack: formatStack(err)
@@ -576,7 +576,7 @@ if (log === _.noop) {
   Notifier.prototype.log = _.noop;
 } else {
   Notifier.prototype.log = function () {
-    const args = [].slice.apply(arguments);
+    let args = [].slice.apply(arguments);
     if (this.from) args.unshift(this.from + ':');
     log.apply(null, args);
   };
@@ -585,15 +585,15 @@ if (log === _.noop) {
 // general functionality used by .event() and .lifecycle()
 function createGroupLogger(type, opts) {
   // Track the groups managed by this logger
-  const groups = window[type + 'Groups'] = {};
+  let groups = window[type + 'Groups'] = {};
 
   return function logger(name, success) {
     let status; // status of the timer
     let exec; // function to execute and wrap
     let ret; // return value
 
-    const complete = function (val) { logger(name, true); return val; };
-    const failure = function (err) { logger(name, false); throw err; };
+    let complete = function (val) { logger(name, true); return val; };
+    let failure = function (err) { logger(name, false); throw err; };
 
     if (typeof success === 'function' || success === void 0) {
       // start
@@ -609,7 +609,7 @@ function createGroupLogger(type, opts) {
     }
     else {
       groups[name] = now() - (groups[name] || 0);
-      const time = ' in ' + groups[name].toFixed(2) + 'ms';
+      let time = ' in ' + groups[name].toFixed(2) + 'ms';
 
       // end
       if (success) {

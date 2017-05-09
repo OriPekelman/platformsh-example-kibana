@@ -1,20 +1,9 @@
 'use strict';
 
-var _alter = require('../lib/alter.js');
-
-var _alter2 = _interopRequireDefault(_alter);
-
-var _lodash = require('lodash');
-
-var _lodash2 = _interopRequireDefault(_lodash);
-
-var _chainable = require('../lib/classes/chainable');
-
-var _chainable2 = _interopRequireDefault(_chainable);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-module.exports = new _chainable2.default('movingaverage', {
+var alter = require('../lib/alter.js');
+var _ = require('lodash');
+var Chainable = require('../lib/classes/chainable');
+module.exports = new Chainable('movingaverage', {
   args: [{
     name: 'inputSeries',
     types: ['seriesList']
@@ -30,18 +19,18 @@ module.exports = new _chainable2.default('movingaverage', {
   aliases: ['mvavg'],
   help: 'Calculate the moving average over a given window. Nice for smoothing noisey series',
   fn: function movingaverageFn(args) {
-    return (0, _alter2.default)(args, function (eachSeries, _window, _position) {
+    return alter(args, function (eachSeries, _window, _position) {
 
       _position = _position || 'center';
-      const validPositions = ['left', 'right', 'center'];
-      if (!_lodash2.default.contains(validPositions, _position)) throw new Error('Valid positions are: ' + validPositions.join(', '));
+      var validPositions = ['left', 'right', 'center'];
+      if (!_.contains(validPositions, _position)) throw new Error('Valid positions are: ' + validPositions.join(', '));
 
-      const pairs = eachSeries.data;
-      const pairsLen = pairs.length;
+      var pairs = eachSeries.data;
+      var pairsLen = pairs.length;
       eachSeries.label = eachSeries.label + ' mvavg=' + _window;
 
       function toPoint(point, pairSlice) {
-        const average = _lodash2.default.chain(pairSlice).map(1).reduce(function (memo, num) {
+        var average = _.chain(pairSlice).map(1).reduce(function (memo, num) {
           return memo + num;
         }).value() / _window;
 
@@ -49,19 +38,19 @@ module.exports = new _chainable2.default('movingaverage', {
       }
 
       if (_position === 'center') {
-        const windowLeft = Math.floor(_window / 2);
-        const windowRight = _window - windowLeft;
-        eachSeries.data = _lodash2.default.map(pairs, function (point, i) {
+        var windowLeft = Math.floor(_window / 2);
+        var windowRight = _window - windowLeft;
+        eachSeries.data = _.map(pairs, function (point, i) {
           if (i < windowLeft || i >= pairsLen - windowRight) return [point[0], null];
           return toPoint(point, pairs.slice(i - windowLeft, i + windowRight));
         });
       } else if (_position === 'left') {
-        eachSeries.data = _lodash2.default.map(pairs, function (point, i) {
+        eachSeries.data = _.map(pairs, function (point, i) {
           if (i < _window) return [point[0], null];
           return toPoint(point, pairs.slice(i - _window, i));
         });
       } else if (_position === 'right') {
-        eachSeries.data = _lodash2.default.map(pairs, function (point, i) {
+        eachSeries.data = _.map(pairs, function (point, i) {
           if (i >= pairsLen - _window) return [point[0], null];
           return toPoint(point, pairs.slice(i, i + _window));
         });

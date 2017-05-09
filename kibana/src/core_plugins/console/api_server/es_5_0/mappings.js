@@ -1,6 +1,6 @@
 'use strict';
 
-let _ = require("lodash");
+var _ = require("lodash");
 
 var BOOLEAN = {
   __one_of: [true, false]

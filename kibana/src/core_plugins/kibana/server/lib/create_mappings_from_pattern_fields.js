@@ -1,21 +1,21 @@
 'use strict';
 
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
 var _lodash = require('lodash');
 
 var _lodash2 = _interopRequireDefault(_lodash);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
 // Creates an ES field mapping from a single field object in a kibana index pattern
 module.exports = function createMappingsFromPatternFields(fields) {
-  if (_lodash2.default.isEmpty(fields)) {
+  if (_lodash2['default'].isEmpty(fields)) {
     throw new Error('argument must not be empty');
   }
 
-  const mappings = {};
+  var mappings = {};
 
-  _lodash2.default.forEach(fields, function (field) {
-    let mapping;
+  _lodash2['default'].forEach(fields, function (field) {
+    var mapping = undefined;
 
     if (field.type === 'string') {
       mapping = {
@@ -25,7 +25,7 @@ module.exports = function createMappingsFromPatternFields(fields) {
         }
       };
     } else {
-      const fieldType = field.type === 'number' ? 'double' : field.type;
+      var fieldType = field.type === 'number' ? 'double' : field.type;
       mapping = {
         type: fieldType,
         index: true,
@@ -33,7 +33,7 @@ module.exports = function createMappingsFromPatternFields(fields) {
       };
     }
 
-    _lodash2.default.set(mappings, field.name.split('.').join('.properties.'), mapping);
+    _lodash2['default'].set(mappings, field.name.split('.').join('.properties.'), mapping);
   });
 
   return mappings;

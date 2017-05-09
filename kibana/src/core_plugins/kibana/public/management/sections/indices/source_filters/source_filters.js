@@ -12,7 +12,7 @@ import './source_filters.less';
 const notify = new Notifier();
 
 uiModules.get('kibana')
-.directive('sourceFilters', function (Private, $filter, confirmModal) {
+.directive('sourceFilters', function (Private, $filter) {
   const angularFilter = $filter('filter');
   const { fieldWildcardMatcher } = Private(FieldWildcardProvider);
   const rowScopes = []; // track row scopes, so they can be destroyed as needed
@@ -82,7 +82,7 @@ uiModules.get('kibana')
               ]);
             });
             // Update the tab count
-            find($scope.$parent.editSections, { index: 'sourceFilters' }).count = $scope.rows.length;
+            find($scope.$parent.editSections, {index: 'sourceFilters'}).count = $scope.rows.length;
           }
         });
       }
@@ -92,20 +92,12 @@ uiModules.get('kibana')
       }
 
       delete(filter) {
-        const doDelete = () => {
-          if (this.editing === filter) {
-            this.editing = null;
-          }
+        if (this.editing === filter) {
+          this.editing = null;
+        }
 
-          this.$scope.indexPattern.sourceFilters = without(this.all(), filter);
-          return this.save();
-        };
-
-        const confirmModalOptions = {
-          confirmButtonText: 'Delete filter',
-          onConfirm: doDelete
-        };
-        confirmModal(`Are you sure want to delete this filter?`, confirmModalOptions);
+        this.$scope.indexPattern.sourceFilters = without(this.all(), filter);
+        return this.save();
       }
 
       create() {

@@ -6,12 +6,11 @@ uiModules
   return {
     restrict: 'E',
     template: indexHeaderTemplate,
-    replace: true,
     scope: {
       indexPattern: '=',
       setDefault: '&',
       refreshFields: '&',
-      delete: '&',
+      delete: '&'
     },
     link: function ($scope, $el, attrs) {
       $scope.delete = attrs.delete ? $scope.delete : null;

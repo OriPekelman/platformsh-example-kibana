@@ -1,6 +1,6 @@
 "use strict";
 
-let _ = require("lodash");
+var _ = require("lodash");
 
 function addSimpleCat(endpoint, api, params, patterns) {
   var url_params = { "help": "__flag__", "v": "__flag__", "bytes": ["b"] };

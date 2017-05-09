@@ -87,7 +87,7 @@ import uiModules from 'ui/modules';
  */
 
 
-const nextId = _.partial(_.uniqueId, 'privateProvider#');
+let nextId = _.partial(_.uniqueId, 'privateProvider#');
 
 function name(fn) {
   return fn.name || fn.toString().split('\n').shift();
@@ -95,11 +95,11 @@ function name(fn) {
 
 uiModules.get('kibana')
 .provider('Private', function () {
-  const provider = this;
+  let provider = this;
 
   // one cache/swaps per Provider
-  const cache = {};
-  const swaps = {};
+  let cache = {};
+  let swaps = {};
 
   // return the uniq id for this function
   function identify(fn) {
@@ -117,15 +117,15 @@ uiModules.get('kibana')
   };
 
   provider.swap = function (fn, prov) {
-    const id = identify(fn);
+    let id = identify(fn);
     swaps[id] = prov;
   };
 
   provider.$get = ['$injector', function PrivateFactory($injector) {
 
     // prevent circular deps by tracking where we came from
-    const privPath = [];
-    const pathToString = function () {
+    let privPath = [];
+    let pathToString = function () {
       return privPath.map(name).join(' -> ');
     };
 
@@ -140,7 +140,7 @@ uiModules.get('kibana')
 
       privPath.push(prov);
 
-      const context = {};
+      let context = {};
       let instance = $injector.invoke(prov, context, locals);
       if (!_.isObject(instance)) instance = context;
 

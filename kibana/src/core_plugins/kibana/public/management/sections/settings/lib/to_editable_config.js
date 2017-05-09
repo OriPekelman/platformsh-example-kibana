@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import getValType from './get_val_type';
 import getEditorType from './get_editor_type';
 

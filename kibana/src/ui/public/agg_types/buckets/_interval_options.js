@@ -1,4 +1,10 @@
-export default function IntervalOptionsService() {
+import moment from 'moment';
+
+export default function IntervalOptionsService(Private) {
+
+  // shorthand
+  let ms = function (type) { return moment.duration(1, type).asMilliseconds(); };
+
   return [
     {
       display: 'Auto',
@@ -46,4 +52,4 @@ export default function IntervalOptionsService() {
       val: 'custom'
     }
   ];
-}
+};

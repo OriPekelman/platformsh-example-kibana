@@ -1,5 +1,6 @@
 import uiModules from 'ui/modules';
 import _ from 'lodash';
+import moment from 'moment';
 const module = uiModules.get('app/timelion');
 
 // Used only by the savedSheets service, usually no reason to change this
@@ -48,9 +49,6 @@ module.factory('SavedSheet', function (courier, config) {
     timelion_rows: 'integer',
     version: 'integer'
   };
-
-  // Order these fields to the top, the rest are alphabetical
-  SavedSheet.fieldOrder = ['title', 'description'];
 
   return SavedSheet;
 });

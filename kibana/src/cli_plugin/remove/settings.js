@@ -1,6 +1,6 @@
 'use strict';
 
-Object.defineProperty(exports, "__esModule", {
+Object.defineProperty(exports, '__esModule', {
   value: true
 });
 exports.parse = parse;
@@ -8,7 +8,7 @@ exports.parse = parse;
 var _path = require('path');
 
 function parse(command, options) {
-  const settings = {
+  var settings = {
     quiet: options.quiet || false,
     silent: options.silent || false,
     config: options.config || '',
@@ -20,3 +20,5 @@ function parse(command, options) {
 
   return settings;
 }
+
+;

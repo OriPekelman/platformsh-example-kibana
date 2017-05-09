@@ -1,26 +1,16 @@
 'use strict';
 
-module.exports = function ({ env, bundle }) {
+module.exports = function (_ref) {
+  var env = _ref.env;
+  var bundle = _ref.bundle;
 
-  const pluginSlug = env.pluginInfo.sort().map(p => ' *  - ' + p).join('\n');
+  var pluginSlug = env.pluginInfo.sort().map(function (p) {
+    return ' *  - ' + p;
+  }).join('\n');
 
-  const requires = bundle.modules.map(m => `require('${m}');`).join('\n');
+  var requires = bundle.modules.map(function (m) {
+    return 'require(\'' + m + '\');';
+  }).join('\n');
 
-  return `
-/**
- * Test entry file
- *
- * This is programatically created and updated, do not modify
- *
- * context: ${JSON.stringify(env.context)}
- * includes code from:
-${pluginSlug}
- *
- */
-
-require('ui/chrome');
-${requires}
-require('ui/chrome').bootstrap(/* xoxo */);
-
-`;
+  return '\n/**\n * Test entry file\n *\n * This is programatically created and updated, do not modify\n *\n * context: ' + JSON.stringify(env.context) + '\n * includes code from:\n' + pluginSlug + '\n *\n */\n\nrequire(\'ui/chrome\');\n' + requires + '\nrequire(\'ui/chrome\').bootstrap(/* xoxo */);\n\n';
 };

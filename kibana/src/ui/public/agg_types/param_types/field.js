@@ -7,7 +7,7 @@ import IndexedArray from 'ui/indexed_array';
 import Notifier from 'ui/notify/notifier';
 
 export default function FieldAggParamFactory(Private, $filter) {
-  const BaseAggParam = Private(AggTypesParamTypesBaseProvider);
+  let BaseAggParam = Private(AggTypesParamTypesBaseProvider);
   const notifier = new Notifier();
 
   _.class(FieldAggParam).inherits(BaseAggParam);
@@ -18,10 +18,6 @@ export default function FieldAggParamFactory(Private, $filter) {
   FieldAggParam.prototype.editor = editorHtml;
   FieldAggParam.prototype.scriptable = true;
   FieldAggParam.prototype.filterFieldTypes = '*';
-  // retain only the fields with the aggregatable property if the onlyAggregatable option is true
-  FieldAggParam.prototype.onlyAggregatable = true;
-  // show a warning about the field being analyzed
-  FieldAggParam.prototype.showAnalyzedWarning = true;
 
   /**
    * Called to serialize values for saving an aggConfig object
@@ -40,20 +36,14 @@ export default function FieldAggParamFactory(Private, $filter) {
     const indexPattern = aggConfig.getIndexPattern();
     let fields = indexPattern.fields.raw;
 
-    if (this.onlyAggregatable) {
-      fields = fields.filter(f => f.aggregatable);
-    }
+    fields = fields.filter(f => f.aggregatable);
 
     if (!this.scriptable) {
       fields = fields.filter(field => !field.scripted);
     }
 
     if (this.filterFieldTypes) {
-      let filters = this.filterFieldTypes;
-      if (_.isFunction(this.filterFieldTypes)) {
-        filters = this.filterFieldTypes.bind(this, aggConfig.vis);
-      }
-      fields = $filter('fieldType')(fields, filters);
+      fields = $filter('fieldType')(fields, this.filterFieldTypes);
       fields = $filter('orderBy')(fields, ['type', 'name']);
     }
 
@@ -98,7 +88,7 @@ export default function FieldAggParamFactory(Private, $filter) {
    * @return {undefined}
    */
   FieldAggParam.prototype.write = function (aggConfig, output) {
-    const field = aggConfig.getField();
+    let field = aggConfig.getField();
 
     if (!field) {
       throw new TypeError('"field" is a required parameter');
@@ -115,4 +105,4 @@ export default function FieldAggParamFactory(Private, $filter) {
   };
 
   return FieldAggParam;
-}
+};

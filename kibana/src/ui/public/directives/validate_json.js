@@ -1,8 +1,10 @@
+import _ from 'lodash';
+import $ from 'jquery';
 import uiModules from 'ui/modules';
 
-const module = uiModules.get('kibana');
+let module = uiModules.get('kibana');
 
-module.directive('validateJson', function () {
+module.directive('validateJson', function ($compile) {
   return {
     restrict: 'A',
     require: 'ngModel',
@@ -13,7 +15,7 @@ module.directive('validateJson', function () {
     link: function ($scope, $elem, attr, ngModel) {
       $scope.$watch('ngModel', validator);
 
-      function validator(newValue) {
+      function validator(newValue, oldValue) {
         if (!newValue || newValue.length === 0) {
           setValid();
           return;

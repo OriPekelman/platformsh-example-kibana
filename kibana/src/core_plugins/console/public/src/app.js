@@ -1,7 +1,10 @@
 var $ = require('jquery');
 
+let curl = require('./curl');
 let history = require('./history');
 let mappings = require('./mappings');
+let es = require('./es');
+let _ = require('lodash');
 
 export default function init(input, output, sourceLocation = 'stored') {
   $(document.body).removeClass('fouc');
@@ -27,9 +30,9 @@ export default function init(input, output, sourceLocation = 'stored') {
       }
     }
     else if (/^https?:\/\//.test(sourceLocation)) {
-      var loadFrom = { url: sourceLocation, dataType: "text", kbnXsrfToken: false };
+      var loadFrom = {url: sourceLocation, dataType: "text", kbnXsrfToken: false};
       if (/https?:\/\/api.github.com/.test(sourceLocation)) {
-        loadFrom.headers = { Accept: "application/vnd.github.v3.raw" };
+        loadFrom.headers = {Accept: "application/vnd.github.v3.raw"};
       }
       $.ajax(loadFrom).done(function (data) {
         resetToValues(data);
@@ -48,7 +51,7 @@ export default function init(input, output, sourceLocation = 'stored') {
     var timer;
     var saveDelay = 500;
 
-    input.getSession().on("change", function onChange() {
+    input.getSession().on("change", function onChange(e) {
       if (timer) {
         timer = clearTimeout(timer);
       }
@@ -106,5 +109,5 @@ export default function init(input, output, sourceLocation = 'stored') {
 
   loadSavedState();
   setupAutosave();
-  mappings.startRetrievingAutoCompleteInfo();
-}
+  mappings.retrieveAutocompleteInfoFromServer();
+};

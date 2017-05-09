@@ -15,10 +15,10 @@ uiModules
           illegalCharacters.push('*');
         }
 
-        const isValid = function (input) {
+        let isValid = function (input) {
           if (input == null || input === '' || input === '.' || input === '..') return false;
 
-          const match = _.find(illegalCharacters, function (character) {
+          let match = _.find(illegalCharacters, function (character) {
             return input.indexOf(character) >= 0;
           });
           return !match;

@@ -2,6 +2,7 @@ import _ from 'lodash';
 import 'ui/filters/uriescape';
 import 'ui/filters/rison';
 import uiModules from 'ui/modules';
+import rison from 'rison-node';
 import AppStateProvider from 'ui/state_management/app_state';
 
 uiModules.get('kibana/url')
@@ -70,10 +71,10 @@ export function KbnUrlProvider($injector, $location, $rootScope, $parse, Private
 
     return template.replace(/\{\{([^\}]+)\}\}/g, function (match, expr) {
       // remove filters
-      const key = expr.split('|')[0].trim();
+      let key = expr.split('|')[0].trim();
 
       // verify that the expression can be evaluated
-      const p = $parse(key)(paramObj);
+      let p = $parse(key)(paramObj);
 
       // if evaluation can't be made, throw
       if (_.isUndefined(p)) {
@@ -109,7 +110,7 @@ export function KbnUrlProvider($injector, $location, $rootScope, $parse, Private
    * @return {string} - the computed url
    */
   self.getRouteUrl = function (obj, route) {
-    const template = obj && obj.routes && obj.routes[route];
+    let template = obj && obj.routes && obj.routes[route];
     if (template) return self.eval(template, obj);
   };
 
@@ -137,22 +138,13 @@ export function KbnUrlProvider($injector, $location, $rootScope, $parse, Private
     self.change(self.getRouteUrl(obj, route));
   };
 
-  /**
-   * Removes the given parameter from the url. Does so without modifying the browser
-   * history.
-   * @param param
-   */
-  self.removeParam = function (param) {
-    $location.search(param, null).replace();
-  };
-
   /////
   // private api
   /////
   let reloading;
 
   self._changeLocation = function (type, url, paramObj, replace, appState) {
-    const prev = {
+    let prev = {
       path: $location.path(),
       search: $location.search()
     };
@@ -165,7 +157,7 @@ export function KbnUrlProvider($injector, $location, $rootScope, $parse, Private
       $location.search(appState.getQueryParamName(), appState.toQueryParam());
     }
 
-    const next = {
+    let next = {
       path: $location.path(),
       search: $location.search()
     };
@@ -192,7 +184,7 @@ export function KbnUrlProvider($injector, $location, $rootScope, $parse, Private
   self._shouldForceReload = function (next, prev, $route) {
     if (reloading) return false;
 
-    const route = $route.current && $route.current.$$route;
+    let route = $route.current && $route.current.$$route;
     if (!route) return false;
 
     // for the purposes of determining whether the router will
@@ -201,8 +193,8 @@ export function KbnUrlProvider($injector, $location, $rootScope, $parse, Private
     const prevPath = prev.path || '/';
     if (nextPath !== prevPath) return false;
 
-    const reloadOnSearch = route.reloadOnSearch;
-    const searchSame = _.isEqual(next.search, prev.search);
+    let reloadOnSearch = route.reloadOnSearch;
+    let searchSame = _.isEqual(next.search, prev.search);
     return (reloadOnSearch && searchSame) || !reloadOnSearch;
   };
 }

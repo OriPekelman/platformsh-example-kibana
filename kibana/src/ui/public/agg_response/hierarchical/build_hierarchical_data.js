@@ -6,11 +6,11 @@ import AggConfigResult from 'ui/vis/agg_config_result';
 import AggResponseHierarchicalBuildSplitProvider from 'ui/agg_response/hierarchical/_build_split';
 import AggResponseHierarchicalHierarchicalTooltipFormatterProvider from 'ui/agg_response/hierarchical/_hierarchical_tooltip_formatter';
 export default function buildHierarchicalDataProvider(Private, Notifier) {
-  const buildSplit = Private(AggResponseHierarchicalBuildSplitProvider);
-  const tooltipFormatter = Private(AggResponseHierarchicalHierarchicalTooltipFormatterProvider);
+  let buildSplit = Private(AggResponseHierarchicalBuildSplitProvider);
+  let tooltipFormatter = Private(AggResponseHierarchicalHierarchicalTooltipFormatterProvider);
 
 
-  const notify = new Notifier({
+  let notify = new Notifier({
     location: 'Pie chart response converter'
   });
 
@@ -18,21 +18,22 @@ export default function buildHierarchicalDataProvider(Private, Notifier) {
     // Create a refrenece to the buckets
     let buckets = vis.aggs.bySchemaGroup.buckets;
 
+
     // Find the metric so it's easier to reference.
     // TODO: Change this to support multiple metrics.
-    const metric = vis.aggs.bySchemaGroup.metrics[0];
+    let metric = vis.aggs.bySchemaGroup.metrics[0];
 
     // Link each agg to the next agg. This will be
     // to identify the next bucket aggregation
     buckets = arrayToLinkedList(buckets);
 
     // Create the raw data to be used in the spy panel
-    const raw = createRawData(vis, resp);
+    let raw = createRawData(vis, resp);
 
     // If buckets is falsy then we should just return the aggs
     if (!buckets) {
-      const label = 'Count';
-      const value = resp.aggregations
+      let label = 'Count';
+      let value = resp.aggregations
         && resp.aggregations[metric.id]
         && resp.aggregations[metric.id].value
         || resp.hits.total;
@@ -49,8 +50,8 @@ export default function buildHierarchicalDataProvider(Private, Notifier) {
       };
     }
 
-    const firstAgg = buckets[0];
-    const aggData = resp.aggregations ? resp.aggregations[firstAgg.id] : null;
+    let firstAgg = buckets[0];
+    let aggData = resp.aggregations[firstAgg.id];
 
     if (!firstAgg._next && firstAgg.schema.name === 'split') {
       notify.error('Splitting charts without splitting slices is not supported. Pretending that we are just splitting slices.');
@@ -58,7 +59,7 @@ export default function buildHierarchicalDataProvider(Private, Notifier) {
 
     // start with splitting slices
     if (!firstAgg._next || firstAgg.schema.name === 'segment') {
-      const split = buildSplit(firstAgg, metric, aggData);
+      let split = buildSplit(firstAgg, metric, aggData);
       split.hits = resp.hits.total;
       split.raw = raw;
       split.tooltipFormatter = tooltipFormatter(raw.columns);
@@ -66,17 +67,17 @@ export default function buildHierarchicalDataProvider(Private, Notifier) {
     }
 
     // map the split aggregations into rows.
-    const rows = _.map(extractBuckets(aggData, firstAgg), function (bucket) {
-      const agg = firstAgg._next;
-      const split = buildSplit(agg, metric, bucket[agg.id]);
+    let rows = _.map(extractBuckets(aggData, firstAgg), function (bucket) {
+      let agg = firstAgg._next;
+      let split = buildSplit(agg, metric, bucket[agg.id]);
       // Since splits display labels we need to set it.
       split.label = firstAgg.fieldFormatter()(agg.getKey(bucket));
 
-      const displayName = firstAgg.getFieldDisplayName();
+      let displayName = firstAgg.getFieldDisplayName();
       if (!_.isEmpty(displayName)) split.label += ': ' + displayName;
 
       split.tooltipFormatter = tooltipFormatter(raw.columns);
-      const aggConfigResult = new AggConfigResult(firstAgg, null, null, firstAgg.getKey(bucket));
+      let aggConfigResult = new AggConfigResult(firstAgg, null, null, firstAgg.getKey(bucket));
       split.split = { aggConfig: firstAgg, aggConfigResult: aggConfigResult, key: bucket.key };
       _.each(split.slices.children, function (child) {
         child.aggConfigResult.$parent = aggConfigResult;
@@ -84,7 +85,7 @@ export default function buildHierarchicalDataProvider(Private, Notifier) {
       return split;
     });
 
-    const result = { hits: resp.hits.total, raw: raw };
+    let result = { hits: resp.hits.total, raw: raw };
     if (firstAgg.params.row) {
       result.rows = rows;
     } else {
@@ -93,4 +94,4 @@ export default function buildHierarchicalDataProvider(Private, Notifier) {
 
     return result;
   };
-}
+};

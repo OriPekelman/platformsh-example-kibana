@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { SavedObjectNotFound, DuplicateField } from 'ui/errors';
+import errors from 'ui/errors';
 import angular from 'angular';
 import getComputedFields from 'ui/index_patterns/_get_computed_fields';
 import formatHit from 'ui/index_patterns/_format_hit';
@@ -14,7 +14,7 @@ import IndexPatternsFlattenHitProvider from 'ui/index_patterns/_flatten_hit';
 import IndexPatternsCalculateIndicesProvider from 'ui/index_patterns/_calculate_indices';
 import IndexPatternsPatternCacheProvider from 'ui/index_patterns/_pattern_cache';
 
-export default function IndexPatternFactory(Private, Notifier, config, kbnIndex, Promise, confirmModalPromise) {
+export default function IndexPatternFactory(Private, Notifier, config, kbnIndex, Promise, safeConfirm) {
   const fieldformats = Private(RegistryFieldFormatsProvider);
   const getIds = Private(IndexPatternsGetIdsProvider);
   const mapper = Private(IndexPatternsMapperProvider);
@@ -69,7 +69,7 @@ export default function IndexPatternFactory(Private, Notifier, config, kbnIndex,
 
   function updateFromElasticSearch(indexPattern, response) {
     if (!response.found) {
-      throw new SavedObjectNotFound(type, indexPattern.id);
+      throw new errors.SavedObjectNotFound(type, indexPattern.id);
     }
 
     _.forOwn(mapping, (fieldMapping, name) => {
@@ -147,7 +147,7 @@ export default function IndexPatternFactory(Private, Notifier, config, kbnIndex,
 
   function fetchFields(indexPattern) {
     return mapper
-    .getFieldsForIndexPattern(indexPattern, { skipIndexPatternCache: true })
+    .getFieldsForIndexPattern(indexPattern, true)
     .then(fields => {
       const scripted = indexPattern.getScriptedFields();
       const all = fields.concat(scripted);
@@ -212,7 +212,7 @@ export default function IndexPatternFactory(Private, Notifier, config, kbnIndex,
       const names = _.pluck(scriptedFields, 'name');
 
       if (_.contains(names, name)) {
-        throw new DuplicateField(name);
+        throw new errors.DuplicateField(name);
       }
 
       this.fields.push({
@@ -337,7 +337,7 @@ export default function IndexPatternFactory(Private, Notifier, config, kbnIndex,
         }
         const confirmMessage = 'Are you sure you want to overwrite this?';
 
-        return confirmModalPromise(confirmMessage, { confirmButtonText: 'Overwrite' })
+        return safeConfirm(confirmMessage)
         .then(() => Promise
           .try(() => {
             const cached = patternCache.get(this.id);
@@ -363,11 +363,7 @@ export default function IndexPatternFactory(Private, Notifier, config, kbnIndex,
       return mapper
       .clearCache(this)
       .then(() => fetchFields(this))
-      .then(() => this.save())
-      .catch((err) => {
-        notify.error(err);
-        return Promise.reject(err);
-      });
+      .then(() => this.save());
     }
 
     toJSON() {
@@ -387,4 +383,4 @@ export default function IndexPatternFactory(Private, Notifier, config, kbnIndex,
   }
 
   return IndexPattern;
-}
+};

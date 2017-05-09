@@ -1,147 +1,57 @@
-import VisVisTypeProvider from 'ui/vis/vis_type';
 import VislibVisTypeVislibVisTypeProvider from 'ui/vislib_vis_type/vislib_vis_type';
 import VisSchemasProvider from 'ui/vis/schemas';
-import pointSeriesTemplate from 'plugins/kbn_vislib_vis_types/editors/point_series.html';
-import image from './images/icon-vertical.svg';
+import histogramTemplate from 'plugins/kbn_vislib_vis_types/editors/histogram.html';
 
-export default function PointSeriesVisType(Private) {
-  const VisType = Private(VisVisTypeProvider);
+export default function HistogramVisType(Private) {
   const VislibVisType = Private(VislibVisTypeVislibVisTypeProvider);
   const Schemas = Private(VisSchemasProvider);
 
   return new VislibVisType({
     name: 'histogram',
-    title: 'Vertical Bar',
-    image,
-    description: 'Assign a continuous variable to each axis',
-    category: VisType.CATEGORY.BASIC,
+    title: 'Vertical bar chart',
+    icon: 'fa-bar-chart',
+    description: 'The goto chart for oh-so-many needs. Great for time and non-time data. Stacked or grouped, ' +
+    'exact numbers or percentages. If you are not sure which chart you need, you could do worse than to start here.',
     params: {
       defaults: {
-        grid: {
-          categoryLines: false,
-          style: {
-            color: '#eee'
-          }
-        },
-        categoryAxes: [
-          {
-            id: 'CategoryAxis-1',
-            type: 'category',
-            position: 'bottom',
-            show: true,
-            style: {
-            },
-            scale: {
-              type: 'linear'
-            },
-            labels: {
-              show: true,
-              truncate: 100
-            },
-            title: {}
-          }
-        ],
-        valueAxes: [
-          {
-            id: 'ValueAxis-1',
-            name: 'LeftAxis-1',
-            type: 'value',
-            position: 'left',
-            show: true,
-            style: {
-            },
-            scale: {
-              type: 'linear',
-              mode: 'normal'
-            },
-            labels: {
-              show: true,
-              rotate: 0,
-              filter: false,
-              truncate: 100
-            },
-            title: {}
-          }
-        ],
-        seriesParams: [
-          {
-            show: 'true',
-            type: 'histogram',
-            mode: 'stacked',
-            data: {
-              label: 'Count',
-              id: '1'
-            },
-            valueAxis: 'ValueAxis-1',
-            drawLinesBetweenPoints: true,
-            showCircles: true
-          }
-        ],
         addTooltip: true,
         addLegend: true,
         legendPosition: 'right',
-        showCircles: true,
-        interpolate: 'linear',
         scale: 'linear',
-        drawLinesBetweenPoints: true,
-        radiusRatio: 9,
+        mode: 'stacked',
         times: [],
         addTimeMarker: false,
         defaultYExtents: false,
         setYExtents: false
       },
-      positions: ['top', 'left', 'right', 'bottom'],
-      chartTypes: [{
-        value: 'line',
-        text: 'line'
+      legendPositions: [{
+        value: 'left',
+        text: 'left',
       }, {
-        value: 'area',
-        text: 'area'
+        value: 'right',
+        text: 'right',
       }, {
-        value: 'histogram',
-        text: 'bar'
+        value: 'top',
+        text: 'top',
+      }, {
+        value: 'bottom',
+        text: 'bottom',
       }],
-      axisModes: ['normal', 'percentage', 'wiggle', 'silhouette'],
-      scaleTypes: ['linear', 'log', 'square root'],
-      chartModes: ['normal', 'stacked'],
-      interpolationModes: [{
-        value: 'linear',
-        text: 'straight',
-      }, {
-        value: 'cardinal',
-        text: 'smoothed',
-      }, {
-        value: 'step-after',
-        text: 'stepped',
-      }],
-      editor: pointSeriesTemplate,
-      optionTabs: [
-        {
-          name: 'advanced',
-          title: 'Metrics & Axes',
-          editor: '<div><vislib-series></vislib-series><vislib-value-axes>' +
-          '</vislib-value-axes><vislib-category-axis></vislib-category-axis></div>'
-        },
-        { name: 'options', title: 'Panel Settings', editor: pointSeriesTemplate },
-      ],
+      scales: ['linear', 'log', 'square root'],
+      modes: ['stacked', 'percentage', 'grouped'],
+      editor: histogramTemplate
     },
+    implementsRenderComplete: true,
     schemas: new Schemas([
       {
         group: 'metrics',
         name: 'metric',
         title: 'Y-Axis',
         min: 1,
+        aggFilter: '!std_dev',
         defaults: [
           { schema: 'metric', type: 'count' }
         ]
-      },
-      {
-        group: 'metrics',
-        name: 'radius',
-        title: 'Dot Size',
-        min: 0,
-        max: 1,
-        aggFilter: ['count', 'avg', 'sum', 'min', 'max', 'cardinality']
       },
       {
         group: 'buckets',
@@ -154,7 +64,7 @@ export default function PointSeriesVisType(Private) {
       {
         group: 'buckets',
         name: 'group',
-        title: 'Split Series',
+        title: 'Split Bars',
         min: 0,
         max: 1,
         aggFilter: '!geohash_grid'
@@ -169,4 +79,4 @@ export default function PointSeriesVisType(Private) {
       }
     ])
   });
-}
+};

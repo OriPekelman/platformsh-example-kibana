@@ -8,15 +8,14 @@ import {
   getUnhashableStatesProvider,
   unhashUrl,
 } from 'ui/state_management/state_hashing';
-import Notifier from 'ui/notify';
 
 export default function (chrome, internals) {
 
   UiModules
   .get('kibana')
-  .directive('kbnChrome', () => {
+  .directive('kbnChrome', $rootScope => {
     return {
-      template() {
+      template($el) {
         const $content = $(require('./kbn_chrome.html'));
         const $app = $content.find('.application');
 
@@ -56,7 +55,7 @@ export default function (chrome, internals) {
 
         // and some local values
         chrome.httpActive = $http.pendingRequests;
-        $scope.notifList = Notifier._notifs;
+        $scope.notifList = require('ui/notify')._notifs;
 
         return chrome;
       }

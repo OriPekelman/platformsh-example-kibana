@@ -1,20 +1,12 @@
 'use strict';
 
-var _lodash = require('lodash');
+var _ = require('lodash');
+var fetch = require('node-fetch');
+var moment = require('moment');
+var Datasource = require('../lib/classes/datasource');
+var Promise = require('bluebird');
 
-var _lodash2 = _interopRequireDefault(_lodash);
-
-var _datasource = require('../lib/classes/datasource');
-
-var _datasource2 = _interopRequireDefault(_datasource);
-
-var _bluebird = require('bluebird');
-
-var _bluebird2 = _interopRequireDefault(_bluebird);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-module.exports = new _datasource2.default('static', {
+module.exports = new Datasource('static', {
   aliases: ['value'],
   args: [{
     name: 'value', // _test-data.users.*.data
@@ -28,23 +20,23 @@ module.exports = new _datasource2.default('static', {
   help: 'Draws a single value across the chart',
   fn: function staticFn(args, tlConfig) {
 
-    let data;
-    const target = tlConfig.getTargetSeries();
+    var data;
+    var target = tlConfig.getTargetSeries();
     if (typeof args.byName.value === 'string') {
-      const points = args.byName.value.split(':');
-      const begin = _lodash2.default.first(target)[0];
-      const end = _lodash2.default.last(target)[0];
-      const step = (end - begin) / (points.length - 1);
-      data = _lodash2.default.map(points, function (point, i) {
+      var points = args.byName.value.split(':');
+      var begin = _.first(target)[0];
+      var end = _.last(target)[0];
+      var step = (end - begin) / (points.length - 1);
+      data = _.map(points, function (point, i) {
         return [begin + i * step, parseFloat(point)];
       });
     } else {
-      data = _lodash2.default.map(target, function (bucket) {
+      data = _.map(target, function (bucket) {
         return [bucket[0], args.byName.value];
       });
     }
 
-    return _bluebird2.default.resolve({
+    return Promise.resolve({
       type: 'seriesList',
       list: [{
         data: data,

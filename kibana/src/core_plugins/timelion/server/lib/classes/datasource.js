@@ -1,37 +1,33 @@
 'use strict';
 
-var _load_functions = require('../load_functions.js');
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
-var _load_functions2 = _interopRequireDefault(_load_functions);
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-var _timelion_function = require('./timelion_function');
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var _timelion_function2 = _interopRequireDefault(_timelion_function);
+var loadFunctions = require('../load_functions.js');
+var fitFunctions = loadFunctions('fit_functions');
+var TimelionFunction = require('./timelion_function');
+var offsetTime = require('../offset_time');
 
-var _offset_time = require('../offset_time');
-
-var _offset_time2 = _interopRequireDefault(_offset_time);
-
-var _lodash = require('lodash');
-
-var _lodash2 = _interopRequireDefault(_lodash);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-const fitFunctions = (0, _load_functions2.default)('fit_functions');
-
+var _ = require('lodash');
+var moment = require('moment');
 
 function offsetSeries(response, offset) {
   if (offset) {
-    response = _lodash2.default.map(response, function (point) {
-      return [(0, _offset_time2.default)(point[0], offset, true), point[1]];
+    response = _.map(response, function (point) {
+      return [offsetTime(point[0], offset, true), point[1]];
     });
   }
   return response;
 }
 
-module.exports = class Datasource extends _timelion_function2.default {
-  constructor(name, config) {
+module.exports = (function (_TimelionFunction) {
+  _inherits(Datasource, _TimelionFunction);
+
+  function Datasource(name, config) {
+    _classCallCheck(this, Datasource);
 
     // Additional arguments that every dataSource take
     config.args.push({
@@ -43,21 +39,21 @@ module.exports = class Datasource extends _timelion_function2.default {
     config.args.push({
       name: 'fit',
       types: ['string', 'null'],
-      help: 'Algorithm to use for fitting series to the target time span and interval. Available: ' + _lodash2.default.keys(fitFunctions).join(', ')
+      help: 'Algorithm to use for fitting series to the target time span and interval. Available: ' + _.keys(fitFunctions).join(', ')
     });
 
     // Wrap the original function so we can modify inputs/outputs with offset & fit
-    const originalFunction = config.fn;
+    var originalFunction = config.fn;
     config.fn = function (args, tlConfig) {
-      const config = _lodash2.default.clone(tlConfig);
+      var config = _.clone(tlConfig);
       if (args.byName.offset) {
-        config.time = _lodash2.default.cloneDeep(tlConfig.time);
-        config.time.from = (0, _offset_time2.default)(config.time.from, args.byName.offset);
-        config.time.to = (0, _offset_time2.default)(config.time.to, args.byName.offset);
+        config.time = _.cloneDeep(tlConfig.time);
+        config.time.from = offsetTime(config.time.from, args.byName.offset);
+        config.time.to = offsetTime(config.time.to, args.byName.offset);
       }
 
       return Promise.resolve(originalFunction(args, config)).then(function (seriesList) {
-        seriesList.list = _lodash2.default.map(seriesList.list, function (series) {
+        seriesList.list = _.map(seriesList.list, function (series) {
           if (series.data.length === 0) throw new Error(name + '() returned no results');
           series.data = offsetSeries(series.data, args.byName.offset);
           series.fit = args.byName.fit || series.fit || 'nearest';
@@ -67,7 +63,7 @@ module.exports = class Datasource extends _timelion_function2.default {
       });
     };
 
-    super(name, config);
+    _get(Object.getPrototypeOf(Datasource.prototype), 'constructor', this).call(this, name, config);
 
     // You  need to call timelionFn if calling up a datasource from another datasource,
     // otherwise teh series will end up being offset twice.
@@ -79,4 +75,5 @@ module.exports = class Datasource extends _timelion_function2.default {
     Object.freeze(this);
   }
 
-};
+  return Datasource;
+})(TimelionFunction);

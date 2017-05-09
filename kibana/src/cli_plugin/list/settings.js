@@ -1,13 +1,18 @@
 'use strict';
 
-Object.defineProperty(exports, "__esModule", {
+Object.defineProperty(exports, '__esModule', {
   value: true
 });
 exports.parse = parse;
-function parse(command) {
-  const settings = {
+
+var _path = require('path');
+
+function parse(command, options) {
+  var settings = {
     pluginDir: command.pluginDir || ''
   };
 
   return settings;
 }
+
+;

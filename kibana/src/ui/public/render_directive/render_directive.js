@@ -1,4 +1,5 @@
 import { isPlainObject } from 'lodash';
+import $ from 'jquery';
 import uiModules from 'ui/modules';
 import applyScopeBindingsProvider from './apply_scope_bindings';
 
@@ -26,7 +27,7 @@ import applyScopeBindingsProvider from './apply_scope_bindings';
  */
 uiModules
 .get('kibana')
-.directive('renderDirective', function (Private) {
+.directive('renderDirective', function (Private, $parse) {
   const applyScopeBindings = Private(applyScopeBindingsProvider);
 
   return {
@@ -34,7 +35,7 @@ uiModules
     scope: {
       'definition': '='
     },
-    template: function ($el) {
+    template: function ($el, $attrs) {
       return $el.html();
     },
     controller: function ($scope, $element, $attrs, $transclude, $injector) {

@@ -2,7 +2,6 @@ import _ from 'lodash';
 import angular from 'angular';
 import moment from 'moment';
 import getSort from 'ui/doc_table/lib/get_sort';
-import * as columnActions from 'ui/doc_table/actions/columns';
 import dateMath from '@elastic/datemath';
 import 'ui/doc_table';
 import 'ui/visualize';
@@ -14,6 +13,7 @@ import 'ui/courier';
 import 'ui/index_patterns';
 import 'ui/state_management/app_state';
 import 'ui/timefilter';
+import 'ui/highlight/highlight_tags';
 import 'ui/share';
 import VisProvider from 'ui/vis';
 import DocTitleProvider from 'ui/doc_title';
@@ -89,7 +89,7 @@ app.directive('discoverApp', function () {
 });
 
 function discoverController($scope, config, courier, $route, $window, Notifier,
-  AppState, timefilter, Promise, Private, kbnUrl) {
+  AppState, timefilter, Promise, Private, kbnUrl, highlightTags) {
 
   const Vis = Private(VisProvider);
   const docTitle = Private(DocTitleProvider);
@@ -109,6 +109,9 @@ function discoverController($scope, config, courier, $route, $window, Notifier,
     return interval.val !== 'custom';
   };
 
+  $scope.toggleInterval = function () {
+    $scope.showInterval = !$scope.showInterval;
+  };
   $scope.topNavMenu = [{
     key: 'new',
     description: 'New Search',
@@ -140,10 +143,7 @@ function discoverController($scope, config, courier, $route, $window, Notifier,
   // the actual courier.SearchSource
   $scope.searchSource = savedSearch.searchSource;
   $scope.indexPattern = resolveIndexPatternLoading();
-  $scope.searchSource
-  .set('index', $scope.indexPattern)
-  .highlightAll(true)
-  .version(true);
+  $scope.searchSource.set('index', $scope.indexPattern);
 
   if (savedSearch.id) {
     docTitle.change(savedSearch.title);
@@ -158,7 +158,7 @@ function discoverController($scope, config, courier, $route, $window, Notifier,
     return {
       query: $scope.searchSource.get('query') || '',
       sort: getSort.array(savedSearch.sort, $scope.indexPattern),
-      columns: savedSearch.columns.length > 0 ? savedSearch.columns : config.get('defaultColumns').slice(),
+      columns: savedSearch.columns.length > 0 ? savedSearch.columns : config.get('defaultColumns'),
       index: $scope.indexPattern.id,
       interval: 'auto',
       filters: _.cloneDeep($scope.searchSource.getOwn('filter'))
@@ -234,7 +234,10 @@ function discoverController($scope, config, courier, $route, $window, Notifier,
         timefilter.enabled = !!timefield;
       });
 
-      $scope.$watch('state.interval', function () {
+      $scope.$watch('state.interval', function (interval, oldInterval) {
+        if (interval !== oldInterval && interval === 'auto') {
+          $scope.showInterval = false;
+        }
         $scope.fetch();
       });
 
@@ -245,7 +248,9 @@ function discoverController($scope, config, courier, $route, $window, Notifier,
         const buckets = $scope.vis.aggs.bySchemaGroup.buckets;
 
         if (buckets && buckets.length === 1) {
-          $scope.bucketInterval = buckets[0].buckets.getInterval();
+          $scope.intervalName = 'by ' + buckets[0].buckets.getInterval().description;
+        } else {
+          $scope.intervalName = 'auto';
         }
       });
 
@@ -352,6 +357,7 @@ function discoverController($scope, config, courier, $route, $window, Notifier,
   };
 
   $scope.searchSource.onBeginSegmentedFetch(function (segmented) {
+
     function flushResponseData() {
       $scope.hits = 0;
       $scope.faliures = [];
@@ -363,6 +369,7 @@ function discoverController($scope, config, courier, $route, $window, Notifier,
 
     const sort = $state.sort;
     const timeField = $scope.indexPattern.timeFieldName;
+    const totalSize = $scope.size || $scope.opts.sampleSize;
 
     /**
      * Basically an emum.
@@ -468,36 +475,28 @@ function discoverController($scope, config, courier, $route, $window, Notifier,
     kbnUrl.change('/discover');
   };
 
-  $scope.updateDataSource = Promise.method(function updateDataSource() {
+  $scope.updateDataSource = Promise.method(function () {
     $scope.searchSource
     .size($scope.opts.sampleSize)
     .sort(getSort($state.sort, $scope.indexPattern))
     .query(!$state.query ? null : $state.query)
     .set('filter', queryFilter.getFilters());
-  });
 
-  $scope.setSortOrder = function setSortOrder(columnName, direction) {
-    $scope.state.sort = [columnName, direction];
-  };
+    if (config.get('doc_table:highlight')) {
+      $scope.searchSource.highlight({
+        pre_tags: [highlightTags.pre],
+        post_tags: [highlightTags.post],
+        fields: {'*': {}},
+        require_field_match: false,
+        fragment_size: 2147483647 // Limit of an integer.
+      });
+    }
+  });
 
   // TODO: On array fields, negating does not negate the combination, rather all terms
   $scope.filterQuery = function (field, values, operation) {
     $scope.indexPattern.popularizeField(field, 1);
     filterManager.add(field, values, operation, $state.index);
-  };
-
-  $scope.addColumn = function addColumn(columnName) {
-    $scope.indexPattern.popularizeField(columnName, 1);
-    columnActions.addColumn($scope.state.columns, columnName);
-  };
-
-  $scope.removeColumn = function removeColumn(columnName) {
-    $scope.indexPattern.popularizeField(columnName, 1);
-    columnActions.removeColumn($scope.state.columns, columnName);
-  };
-
-  $scope.moveColumn = function moveColumn(columnName, newIndex) {
-    columnActions.moveColumn($scope.state.columns, columnName, newIndex);
   };
 
   $scope.toTop = function () {
@@ -594,4 +593,4 @@ function discoverController($scope, config, courier, $route, $window, Notifier,
   }
 
   init();
-}
+};

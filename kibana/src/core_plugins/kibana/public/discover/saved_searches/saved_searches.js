@@ -1,3 +1,5 @@
+import _ from 'lodash';
+import Scanner from 'ui/utils/scanner';
 import 'plugins/kibana/discover/saved_searches/_saved_search';
 import 'ui/notify';
 import uiModules from 'ui/modules';

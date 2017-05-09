@@ -15,9 +15,7 @@ uiModules
     scope: {
       rows: '=',
       columns: '=',
-      linkToTop: '=',
       perPage: '=?',
-      showBlankRows: '=?',
       sortHandler: '=?',
       sort: '=?',
       showSelector: '=?',
@@ -51,14 +49,6 @@ uiModules
         self.sort.direction = sortDirection;
         if ($scope.sort) {
           _.assign($scope.sort, self.sort);
-        }
-      };
-
-      self.rowsToShow = function (numRowsPerPage, actualNumRowsOnThisPage) {
-        if ($scope.showBlankRows === false) {
-          return actualNumRowsOnThisPage;
-        } else {
-          return numRowsPerPage;
         }
       };
 

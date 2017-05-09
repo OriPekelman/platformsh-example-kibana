@@ -1,18 +1,15 @@
 'use strict';
 
-var _lodash = require('lodash');
-
-var _lodash2 = _interopRequireDefault(_lodash);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+var _ = require('lodash');
+var moment = require('moment');
 
 // Upsampling and downsampling of non-cummulative sets
 // Good: average, min, max
 // Bad: sum, count
 module.exports = function (dataTuples, targetTuples) {
-  return _lodash2.default.map(targetTuples, function (bucket) {
-    const time = bucket[0];
-    let i = 0;
+  return _.map(targetTuples, function (bucket, h) {
+    var time = bucket[0];
+    var i = 0;
     while (i < dataTuples.length - 1 && (Math.abs(dataTuples[i + 1][0] - time) < Math.abs(dataTuples[i][0] - time) ||
     // TODO: Certain offset= args can cause buckets with duplicate times, eg, offset=-1M
     // check for that, and only use the last of the duplicates. The reason this happens?
@@ -23,7 +20,7 @@ module.exports = function (dataTuples, targetTuples) {
       i++;
     }
 
-    const closest = dataTuples[i];
+    var closest = dataTuples[i];
     dataTuples.splice(0, i);
 
     return [bucket[0], closest[1]];

@@ -1,6 +1,7 @@
+import _ from 'lodash';
 import 'ui/notify/directives';
 import uiModules from 'ui/modules';
-const typeahead = uiModules.get('kibana/typeahead');
+let typeahead = uiModules.get('kibana/typeahead');
 
 
 typeahead.directive('kbnTypeaheadInput', function ($rootScope) {
@@ -10,8 +11,8 @@ typeahead.directive('kbnTypeaheadInput', function ($rootScope) {
     require: ['^ngModel', '^kbnTypeahead'],
 
     link: function ($scope, $el, $attr, deps) {
-      const model = deps[0];
-      const typeaheadCtrl = deps[1];
+      let model = deps[0];
+      let typeaheadCtrl = deps[1];
 
       typeaheadCtrl.setInputModel(model);
 

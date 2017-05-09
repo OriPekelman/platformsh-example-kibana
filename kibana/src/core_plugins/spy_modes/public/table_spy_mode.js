@@ -1,18 +1,20 @@
+import { saveAs } from '@spalger/filesaver';
+import _ from 'lodash';
 import 'ui/agg_table';
 import AggResponseTabifyTabifyProvider from 'ui/agg_response/tabify/tabify';
 import tableSpyModeTemplate from 'plugins/spy_modes/table_spy_mode.html';
-import spyModesRegistry from 'ui/registry/spy_modes';
-
 function VisSpyTableProvider(Notifier, $filter, $rootScope, config, Private) {
   const tabifyAggResponse = Private(AggResponseTabifyTabifyProvider);
+
   const PER_PAGE_DEFAULT = 10;
+
 
   return {
     name: 'table',
     display: 'Table',
     order: 1,
     template: tableSpyModeTemplate,
-    link: function tableLinkFn($scope) {
+    link: function tableLinkFn($scope, $el) {
       $rootScope.$watchMulti.call($scope, [
         'vis',
         'esResp'
@@ -35,4 +37,4 @@ function VisSpyTableProvider(Notifier, $filter, $rootScope, config, Private) {
   };
 }
 
-spyModesRegistry.register(VisSpyTableProvider);
+require('ui/registry/spy_modes').register(VisSpyTableProvider);

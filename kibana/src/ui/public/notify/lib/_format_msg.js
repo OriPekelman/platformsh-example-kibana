@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import formatESMsg from 'ui/notify/lib/_format_es_msg';
-const has = _.has;
+let has = _.has;
 
 /**
  * Formats the error message from an error object, extended elasticsearch
@@ -15,7 +15,7 @@ function formatMsg(err, from) {
     rtn += from + ': ';
   }
 
-  const esMsg = formatESMsg(err);
+  let esMsg = formatESMsg(err);
 
   if (typeof err === 'string') {
     rtn += err;
@@ -29,7 +29,7 @@ function formatMsg(err, from) {
   }
 
   return rtn;
-}
+};
 
 formatMsg.describeError = function (err) {
   if (!err) return undefined;

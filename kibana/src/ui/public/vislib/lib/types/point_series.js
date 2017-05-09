@@ -1,51 +1,27 @@
 import _ from 'lodash';
+import errors from 'ui/errors';
 
-export default function ColumnHandler() {
+export default function ColumnHandler(Private) {
 
-  const createSerieFromParams = (cfg, seri) => {
-    const matchingSeriParams = cfg.seriesParams ? cfg.seriesParams.find(seriConfig => {
-      return seri.aggId === seriConfig.data.id;
-    }) : null;
-
-
-    let interpolate = matchingSeriParams ? matchingSeriParams.interpolate : cfg.interpolate;
+  const createSeries = (cfg, series) => {
+    const stacked = ['stacked', 'percentage', 'wiggle', 'silhouette'].includes(cfg.mode);
+    let interpolate = cfg.interpolate;
     // for backward compatibility when loading URLs or configs we need to check smoothLines
     if (cfg.smoothLines) interpolate = 'cardinal';
 
-    if (!matchingSeriParams) {
-      const stacked = ['stacked', 'percentage', 'wiggle', 'silhouette'].includes(cfg.mode);
-      return {
-        show: true,
-        type: cfg.type || 'line',
-        mode: stacked ? 'stacked' : 'normal',
-        interpolate: interpolate,
-        drawLinesBetweenPoints: cfg.drawLinesBetweenPoints,
-        showCircles: cfg.showCircles,
-        radiusRatio: cfg.radiusRatio,
-        data: seri
-      };
-    }
-
-    return {
-      show: matchingSeriParams.show,
-      type: matchingSeriParams.type,
-      mode: matchingSeriParams.mode,
-      interpolate: interpolate,
-      valueAxis: matchingSeriParams.valueAxis,
-      drawLinesBetweenPoints: matchingSeriParams.drawLinesBetweenPoints,
-      showCircles: matchingSeriParams.showCircles,
-      radiusRatio: cfg.radiusRatio,
-      lineWidth: matchingSeriParams.lineWidth,
-      data: seri
-    };
-  };
-
-  const createSeries = (cfg, series) => {
     return {
       type: 'point_series',
-      addTimeMarker: cfg.addTimeMarker,
       series: _.map(series, (seri) => {
-        return createSerieFromParams(cfg, seri);
+        return {
+          show: true,
+          type: cfg.type || 'line',
+          mode: stacked ? 'stacked' : 'normal',
+          interpolate: interpolate,
+          drawLinesBetweenPoints: cfg.drawLinesBetweenPoints,
+          showCircles: cfg.showCircles,
+          radiusRatio: cfg.radiusRatio,
+          data: seri
+        };
       })
     };
   };
@@ -106,12 +82,6 @@ export default function ColumnHandler() {
             }
           }
         ];
-      } else {
-        config.valueAxes.forEach(axis => {
-          if (axis.labels) {
-            axis.labels.axisFormatter = data.data.yAxisFormatter || data.get('yAxisFormatter');
-          }
-        });
       }
 
       if (!config.categoryAxes) {
@@ -198,18 +168,14 @@ export default function ColumnHandler() {
           inverted: true
         },
         labels: {
-          filter: false,
-          axisFormatter: data.get('zAxisFormatter') || function () { return ''; }
+          axisFormatter: val => val
         },
         style: {
           rangePadding: 0,
           rangeOuterPadding: 0
-        },
-        title: {
-          text: data.get('zAxisLabel') || ''
         }
       });
       return defaults;
     }
   };
-}
+};

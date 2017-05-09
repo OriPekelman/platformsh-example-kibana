@@ -1,11 +1,14 @@
 import _ from 'lodash';
 import moment from 'moment';
+import dateMath from '@elastic/datemath';
 import parseInterval from 'ui/utils/parse_interval';
 import TimeBucketsCalcAutoIntervalProvider from 'ui/time_buckets/calc_auto_interval';
 import TimeBucketsCalcEsIntervalProvider from 'ui/time_buckets/calc_es_interval';
 export default function IntervalHelperProvider(Private, timefilter, config) {
-  const calcAuto = Private(TimeBucketsCalcAutoIntervalProvider);
-  const calcEsInterval = Private(TimeBucketsCalcEsIntervalProvider);
+
+  let calcAuto = Private(TimeBucketsCalcAutoIntervalProvider);
+  let calcEsInterval = Private(TimeBucketsCalcEsIntervalProvider);
+  let tzOffset = moment().format('Z');
 
   function isValidMoment(m) {
     return m && ('isValid' in m) && m.isValid();
@@ -48,11 +51,11 @@ export default function IntervalHelperProvider(Private, timefilter, config) {
       bounds = _.isArray(input) ? input : [];
     }
 
-    const moments = _(bounds)
+    let moments = _(bounds)
     .map(_.ary(moment, 1))
     .sortBy(Number);
 
-    const valid = moments.size() === 2 && moments.every(isValidMoment);
+    let valid = moments.size() === 2 && moments.every(isValidMoment);
     if (!valid) {
       this.clearBounds();
       throw new Error('invalid bounds set: ' + input);
@@ -194,13 +197,13 @@ export default function IntervalHelperProvider(Private, timefilter, config) {
    * @return {[type]} [description]
    */
   TimeBuckets.prototype.getInterval = function () {
-    const self = this;
-    const duration = self.getDuration();
+    let self = this;
+    let duration = self.getDuration();
     return decorateInterval(maybeScaleInterval(readInterval()));
 
     // either pull the interval from state or calculate the auto-interval
     function readInterval() {
-      const interval = self._i;
+      let interval = self._i;
       if (moment.isDuration(interval)) return interval;
       return calcAuto.near(config.get('histogram:barTarget'), duration);
     }
@@ -209,8 +212,8 @@ export default function IntervalHelperProvider(Private, timefilter, config) {
     function maybeScaleInterval(interval) {
       if (!self.hasBounds()) return interval;
 
-      const maxLength = config.get('histogram:maxBars');
-      const approxLen = duration / interval;
+      let maxLength = config.get('histogram:maxBars');
+      let approxLen = duration / interval;
       let scaled;
 
       if (approxLen > maxLength) {
@@ -231,13 +234,13 @@ export default function IntervalHelperProvider(Private, timefilter, config) {
 
     // append some TimeBuckets specific props to the interval
     function decorateInterval(interval) {
-      const esInterval = calcEsInterval(interval);
+      let esInterval = calcEsInterval(interval);
       interval.esValue = esInterval.value;
       interval.esUnit = esInterval.unit;
       interval.expression = esInterval.expression;
       interval.overflow = duration > interval ? moment.duration(interval - duration) : false;
 
-      const prettyUnits = moment.normalizeUnits(esInterval.unit);
+      let prettyUnits = moment.normalizeUnits(esInterval.unit);
       if (esInterval.value === 1) {
         interval.description = prettyUnits;
       } else {
@@ -260,11 +263,11 @@ export default function IntervalHelperProvider(Private, timefilter, config) {
    * @return {string}
    */
   TimeBuckets.prototype.getScaledDateFormat = function () {
-    const interval = this.getInterval();
-    const rules = config.get('dateFormat:scaled');
+    let interval = this.getInterval();
+    let rules = config.get('dateFormat:scaled');
 
     for (let i = rules.length - 1; i >= 0; i--) {
-      const rule = rules[i];
+      let rule = rules[i];
       if (!rule[0] || interval >= moment.duration(rule[0])) {
         return rule[1];
       }
@@ -276,22 +279,22 @@ export default function IntervalHelperProvider(Private, timefilter, config) {
 
   TimeBuckets.__cached__ = function (self) {
     let cache = {};
-    const sameMoment = same(moment.isMoment);
-    const sameDuration = same(moment.isDuration);
+    let sameMoment = same(moment.isMoment);
+    let sameDuration = same(moment.isDuration);
 
-    const desc = {
+    let desc = {
       __cached__: {
         value: self
       },
     };
 
-    const breakers = {
+    let breakers = {
       setBounds: 'bounds',
       clearBounds: 'bounds',
       setInterval: 'interval'
     };
 
-    const resources = {
+    let resources = {
       bounds: {
         setup: function () {
           return [self._lb, self._ub];
@@ -323,15 +326,16 @@ export default function IntervalHelperProvider(Private, timefilter, config) {
     }
 
     function cacheBreaker(prop) {
-      const resource = resources[breakers[prop]];
-      const setup = resource.setup;
-      const changes = resource.changes;
-      const fn = self[prop];
+      let resource = resources[breakers[prop]];
+      let setup = resource.setup;
+      let changes = resource.changes;
+      let deps = resource.deps;
+      let fn = self[prop];
 
       return {
-        value: function cacheBreaker() {
-          const prev = setup.call(self);
-          const ret = fn.apply(self, arguments);
+        value: function cacheBreaker(input) {
+          let prev = setup.call(self);
+          let ret = fn.apply(self, arguments);
 
           if (changes.call(self, prev)) {
             cache = {};
@@ -365,4 +369,4 @@ export default function IntervalHelperProvider(Private, timefilter, config) {
   };
 
   return TimeBuckets;
-}
+};

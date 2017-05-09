@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import propFilter from 'ui/filters/_prop_filter';
 import uiModules from 'ui/modules';
 

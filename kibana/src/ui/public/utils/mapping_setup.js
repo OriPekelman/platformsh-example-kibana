@@ -2,9 +2,9 @@ import angular from 'angular';
 import _ from 'lodash';
 define(function () {
   return function MappingSetupService(kbnIndex, esAdmin) {
-    const mappingSetup = this;
+    let mappingSetup = this;
 
-    const json = {
+    let json = {
       _serialize: function (val) {
         if (val != null) return angular.toJson(val);
       },
@@ -16,13 +16,13 @@ define(function () {
     /**
      * Use to create the mappings, but that should only happen one at a time
      */
-    const activeTypeCreations = {};
+    let activeTypeCreations = {};
 
     /**
      * Get the list of type's mapped in elasticsearch
      * @return {[type]} [description]
      */
-    const getKnownKibanaTypes = _.once(function () {
+    let getKnownKibanaTypes = _.once(function () {
       return esAdmin.indices.getFieldMapping({
         // only concerned with types in this kibana index
         index: kbnIndex,
@@ -39,7 +39,7 @@ define(function () {
     });
 
     mappingSetup.expandShorthand = function (sh) {
-      return _.mapValues(sh || {}, function (val) {
+      return _.mapValues(sh || {}, function (val, prop) {
         // allow shortcuts for the field types, by just setting the value
         // to the type name
         if (typeof val === 'string') val = { type: val };
@@ -72,13 +72,13 @@ define(function () {
         });
       }
 
-      const prom = getKnownKibanaTypes()
+      let prom = getKnownKibanaTypes()
       .then(function (knownTypes) {
         // if the type is in the knownTypes array already
         if (~knownTypes.indexOf(type)) return false;
 
         // we need to create the mapping
-        const body = {};
+        let body = {};
         body[type] = {
           properties: mapping
         };
@@ -87,7 +87,7 @@ define(function () {
           index: kbnIndex,
           type: type,
           body: body
-        }).then(function () {
+        }).then(function (resp) {
           // add this type to the list of knownTypes
           knownTypes.push(type);
 

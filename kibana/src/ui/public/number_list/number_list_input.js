@@ -1,11 +1,13 @@
+import $ from 'jquery';
+import _ from 'lodash';
 import keyMap from 'ui/utils/key_map';
 import uiModules from 'ui/modules';
 
-const INVALID = {}; // invalid flag
-const FLOATABLE = /^[\d\.e\-\+]+$/i;
+let INVALID = {}; // invalid flag
+let FLOATABLE = /^[\d\.e\-\+]+$/i;
 
-const VALIDATION_ERROR = 'numberListRangeAndOrder';
-const DIRECTIVE_ATTR = 'kbn-number-list-input';
+let VALIDATION_ERROR = 'numberListRangeAndOrder';
+let DIRECTIVE_ATTR = 'kbn-number-list-input';
 
 uiModules
 .get('kibana')
@@ -14,13 +16,13 @@ uiModules
     restrict: 'A',
     require: ['ngModel', '^kbnNumberList'],
     link: function ($scope, $el, attrs, controllers) {
-      const ngModelCntr = controllers[0];
-      const numberListCntr = controllers[1];
+      let ngModelCntr = controllers[0];
+      let numberListCntr = controllers[1];
 
-      const $setModel = $parse(attrs.ngModel).assign;
-      const $repeater = $el.closest('[ng-repeat]');
+      let $setModel = $parse(attrs.ngModel).assign;
+      let $repeater = $el.closest('[ng-repeat]');
 
-      const handlers = {
+      let handlers = {
         up: change(add, 1),
         'shift-up': change(addTenth, 1),
 
@@ -52,14 +54,14 @@ uiModules
 
       function go(dir) {
         return function () {
-          const $to = $get(dir);
+          let $to = $get(dir);
           if ($to.size()) $to.focus();
           else return false;
         };
       }
 
       function idKey(event) {
-        const id = [];
+        let id = [];
         if (event.ctrlKey) id.push('ctrl');
         if (event.shiftKey) id.push('shift');
         if (event.metaKey) id.push('meta');
@@ -91,11 +93,11 @@ uiModules
 
       function change(using, mod) {
         return function () {
-          const str = String(ngModelCntr.$viewValue);
-          const val = parse(str);
+          let str = String(ngModelCntr.$viewValue);
+          let val = parse(str);
           if (val === INVALID) return;
 
-          const next = using(mod, val, str);
+          let next = using(mod, val, str);
           if (next === INVALID) return;
 
           $el.val(next);
@@ -104,7 +106,7 @@ uiModules
       }
 
       function onKeydown(event) {
-        const handler = handlers[idKey(event)];
+        let handler = handlers[idKey(event)];
         if (!handler) return;
 
         if (handler(event) !== false) {
@@ -131,13 +133,13 @@ uiModules
           if (isNaN(num)) return INVALID;
         }
 
-        const range = numberListCntr.range;
+        let range = numberListCntr.range;
         if (!range.within(num)) return INVALID;
 
         if ($scope.$index > 0) {
-          const i = $scope.$index - 1;
-          const list = numberListCntr.getList();
-          const prev = list[i];
+          let i = $scope.$index - 1;
+          let list = numberListCntr.getList();
+          let prev = list[i];
           if (num <= prev) return INVALID;
         }
 
@@ -153,14 +155,14 @@ uiModules
           }
         }
       ], function () {
-        const valid = parse(ngModelCntr.$viewValue) !== INVALID;
+        let valid = parse(ngModelCntr.$viewValue) !== INVALID;
         ngModelCntr.$setValidity(VALIDATION_ERROR, valid);
       });
 
       function validate(then) {
         return function (input) {
           let value = parse(input);
-          const valid = value !== INVALID;
+          let valid = value !== INVALID;
           value = valid ? value : input;
           ngModelCntr.$setValidity(VALIDATION_ERROR, valid);
           then && then(input, value);

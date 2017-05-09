@@ -14,16 +14,9 @@ app.directive('discoverField', function ($compile) {
     restrict: 'E',
     template: html,
     replace: true,
-    scope: {
-      field: '=',
-      onAddField: '=',
-      onAddFilter: '=',
-      onRemoveField: '=',
-      onShowDetails: '=',
-    },
     link: function ($scope, $elem) {
       let detailsElem;
-      let detailScope;
+      let detailScope = $scope.$new();
 
 
       const init = function () {
@@ -46,7 +39,7 @@ app.directive('discoverField', function ($compile) {
               ' Values such as foo-bar will be broken into foo and bar.');
           }
 
-          if (!field.indexed && !field.searchable) {
+          if (!field.indexed) {
             warnings.push('This field is not indexed and might not be usable in visualizations.');
           }
         }
@@ -67,11 +60,9 @@ app.directive('discoverField', function ($compile) {
       };
 
       $scope.toggleDisplay = function (field) {
-        if (field.display) {
-          $scope.onRemoveField(field.name);
-        } else {
-          $scope.onAddField(field.name);
-        }
+        // This is inherited from fieldChooser
+        $scope.toggle(field.name);
+        if (field.display) $scope.increaseFieldCounter(field);
 
         if (field.details) {
           $scope.toggleDetails(field);
@@ -80,7 +71,9 @@ app.directive('discoverField', function ($compile) {
 
       $scope.toggleDetails = function (field, recompute) {
         if (_.isUndefined(field.details) || recompute) {
-          $scope.onShowDetails(field, recompute);
+          // This is inherited from fieldChooser
+          $scope.details(field, recompute);
+          detailScope.$destroy();
           detailScope = $scope.$new();
           detailScope.warnings = getWarnings(field);
 
@@ -89,7 +82,6 @@ app.directive('discoverField', function ($compile) {
           $elem.append(detailsElem).addClass('active');
         } else {
           delete field.details;
-          detailScope.$destroy();
           detailsElem.remove();
           $elem.removeClass('active');
         }

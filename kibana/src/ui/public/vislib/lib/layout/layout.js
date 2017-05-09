@@ -3,13 +3,10 @@ import _ from 'lodash';
 import $ from 'jquery';
 import VislibLibLayoutLayoutTypesProvider from './layout_types';
 import AxisProvider from 'ui/vislib/lib/axis';
-import ChartTitleProvider from 'ui/vislib/lib/chart_title';
-
 export default function LayoutFactory(Private) {
 
   const layoutType = Private(VislibLibLayoutLayoutTypesProvider);
   const Axis = Private(AxisProvider);
-  const ChartTitle = Private(ChartTitleProvider);
   /**
    * Builds the visualization DOM layout
    *
@@ -48,7 +45,7 @@ export default function LayoutFactory(Private) {
       if (this.opts.get('type') === 'point_series') {
         this.updateCategoryAxisSize();
       }
-    }
+    };
 
     /**
      * Create the layout based on the json array provided
@@ -62,34 +59,31 @@ export default function LayoutFactory(Private) {
       return _.each(arr, (obj) => {
         this.layout(obj);
       });
-    }
+    };
 
     updateCategoryAxisSize() {
       const visConfig = this.opts;
       const axisConfig = visConfig.get('categoryAxes[0]');
       const axis = new Axis(visConfig, axisConfig);
       const position = axis.axisConfig.get('position');
-      const chartTitle = new ChartTitle(visConfig);
 
       const el = $(this.el).find(`.axis-wrapper-${position}`);
 
       el.css('visibility', 'hidden');
       axis.render();
-      chartTitle.render();
       const width = el.width();
       const height = el.height();
       axis.destroy();
-      el.find('.chart-title svg').remove();
       el.css('visibility', '');
-
 
       if (axis.axisConfig.isHorizontal()) {
         const spacerNodes = $(this.el).find(`.y-axis-spacer-block-${position}`);
-        spacerNodes.height(`${height}px`);
+        el.height(`${height}px`);
+        spacerNodes.height(el.height());
       } else {
         el.find('.y-axis-div-wrapper').width(`${width}px`);
       }
-    }
+    };
 
 
     /**
@@ -141,7 +135,7 @@ export default function LayoutFactory(Private) {
       }
 
       return childEl;
-    }
+    };
 
     /**
      * Appends a `type` of DOM element to `el` and gives it a class name attribute `className`
@@ -168,7 +162,7 @@ export default function LayoutFactory(Private) {
       return d3.select(el)
       .append(type)
       .attr('class', className);
-    }
+    };
 
     /**
      * Removes all DOM elements from DOM element
@@ -179,8 +173,8 @@ export default function LayoutFactory(Private) {
      */
     removeAll(el) {
       return d3.select(el).selectAll('*').remove();
-    }
+    };
   }
 
   return Layout;
-}
+};

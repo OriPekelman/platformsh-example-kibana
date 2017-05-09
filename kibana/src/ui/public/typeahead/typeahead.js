@@ -3,11 +3,11 @@ import 'ui/typeahead/typeahead.less';
 import 'ui/typeahead/_input';
 import 'ui/typeahead/_items';
 import uiModules from 'ui/modules';
-const typeahead = uiModules.get('kibana/typeahead');
+let typeahead = uiModules.get('kibana/typeahead');
 
 
 typeahead.directive('kbnTypeahead', function () {
-  const keyMap = {
+  let keyMap = {
     ESC: 27,
     UP: 38,
     DOWN: 40,
@@ -18,13 +18,13 @@ typeahead.directive('kbnTypeahead', function () {
   return {
     restrict: 'A',
     scope: {
-      historyKey: '@kbnTypeahead',
-      onSelect: '&'
+      historyKey: '@kbnTypeahead'
     },
     controllerAs: 'typeahead',
 
-    controller: function ($scope, PersistedLog, config) {
-      const self = this;
+    controller: function ($scope, $element, $timeout, PersistedLog, config) {
+      let self = this;
+      self.form = $element.closest('form');
       self.query = '';
       self.hidden = true;
       self.focused = false;
@@ -112,7 +112,15 @@ typeahead.directive('kbnTypeahead', function () {
         self.persistEntry();
 
         if (ev && ev.type === 'click') {
-          $scope.onSelect();
+          $timeout(function () {
+            self.submitForm();
+          });
+        }
+      };
+
+      self.submitForm = function () {
+        if (self.form.length) {
+          self.form.submit();
         }
       };
 
@@ -130,7 +138,7 @@ typeahead.directive('kbnTypeahead', function () {
       };
 
       self.keypressHandler = function (ev) {
-        const keyCode = ev.which || ev.keyCode;
+        let keyCode = ev.which || ev.keyCode;
 
         if (self.focused) {
           self.hidden = false;
@@ -186,11 +194,11 @@ typeahead.directive('kbnTypeahead', function () {
         }
 
         // update the filteredItems using the query
-        const beginningMatches = $scope.items.filter(function (item) {
+        let beginningMatches = $scope.items.filter(function (item) {
           return item.indexOf(query) === 0;
         });
 
-        const otherMatches = $scope.items.filter(function (item) {
+        let otherMatches = $scope.items.filter(function (item) {
           return item.indexOf(query) > 0;
         });
 
@@ -202,7 +210,7 @@ typeahead.directive('kbnTypeahead', function () {
       };
 
       // handle updates to parent scope history
-      $scope.$watch('items', function () {
+      $scope.$watch('items', function (items) {
         if (self.query) {
           self.filterItemsByQuery(self.query);
         }
@@ -218,10 +226,7 @@ typeahead.directive('kbnTypeahead', function () {
       });
     },
 
-    link: function ($scope, $el, attrs) {
-      if (!_.has(attrs, 'onSelect')) {
-        throw new Error('on-select must be defined');
-      }
+    link: function ($scope, $el, attr) {
       // should be defined via setInput() method
       if (!$scope.inputModel) {
         throw new Error('kbn-typeahead-input must be defined');

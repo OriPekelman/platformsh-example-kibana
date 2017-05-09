@@ -3,22 +3,25 @@ import _ from 'lodash';
 import moment from 'moment';
 import EnhanceFieldsWithCapabilitiesProvider from 'ui/index_patterns/_enhance_fields_with_capabilities';
 import IndexPatternsTransformMappingIntoFieldsProvider from 'ui/index_patterns/_transform_mapping_into_fields';
+import IndexPatternsIntervalsProvider from 'ui/index_patterns/_intervals';
 import IndexPatternsPatternToWildcardProvider from 'ui/index_patterns/_pattern_to_wildcard';
 import IndexPatternsLocalCacheProvider from 'ui/index_patterns/_local_cache';
 export default function MapperService(Private, Promise, es, esAdmin, config, kbnIndex) {
-  const enhanceFieldsWithCapabilities = Private(EnhanceFieldsWithCapabilitiesProvider);
-  const transformMappingIntoFields = Private(IndexPatternsTransformMappingIntoFieldsProvider);
-  const patternToWildcard = Private(IndexPatternsPatternToWildcardProvider);
 
-  const LocalCache = Private(IndexPatternsLocalCacheProvider);
+  let enhanceFieldsWithCapabilities = Private(EnhanceFieldsWithCapabilitiesProvider);
+  let transformMappingIntoFields = Private(IndexPatternsTransformMappingIntoFieldsProvider);
+  let intervals = Private(IndexPatternsIntervalsProvider);
+  let patternToWildcard = Private(IndexPatternsPatternToWildcardProvider);
+
+  let LocalCache = Private(IndexPatternsLocalCacheProvider);
 
   function Mapper() {
 
     // Save a reference to mapper
-    const self = this;
+    let self = this;
 
     // proper-ish cache, keeps a clean copy of the object, only returns copies of it's copy
-    const fieldCache = self.cache = new LocalCache();
+    let fieldCache = self.cache = new LocalCache();
 
     /**
      * Gets an object containing all fields with their mappings
@@ -27,13 +30,13 @@ export default function MapperService(Private, Promise, es, esAdmin, config, kbn
      * @returns {Promise}
      * @async
      */
-    self.getFieldsForIndexPattern = function (indexPattern, opts) {
-      const id = indexPattern.id;
+    self.getFieldsForIndexPattern = function (indexPattern, skipIndexPatternCache) {
+      let id = indexPattern.id;
 
-      const cache = fieldCache.get(id);
+      let cache = fieldCache.get(id);
       if (cache) return Promise.resolve(cache);
 
-      if (!opts.skipIndexPatternCache) {
+      if (!skipIndexPatternCache) {
         return esAdmin.get({
           index: kbnIndex,
           type: 'index-pattern',
@@ -44,7 +47,7 @@ export default function MapperService(Private, Promise, es, esAdmin, config, kbn
           if (resp.found && resp._source.fields) {
             fieldCache.set(id, JSON.parse(resp._source.fields));
           }
-          return self.getFieldsForIndexPattern(indexPattern, { skipIndexPatternCache: true });
+          return self.getFieldsForIndexPattern(indexPattern, true);
         });
       }
 
@@ -82,7 +85,7 @@ export default function MapperService(Private, Promise, es, esAdmin, config, kbn
       })
       .then(function (resp) {
         // let all = Object.keys(resp).sort();
-        const all = _(resp)
+        let all = _(resp)
         .map(function (index, key) {
           if (index.aliases) {
             return [Object.keys(index.aliases), key];
@@ -95,8 +98,8 @@ export default function MapperService(Private, Promise, es, esAdmin, config, kbn
         .uniq(true)
         .value();
 
-        const matches = all.filter(function (existingIndex) {
-          const parsed = moment(existingIndex, indexPattern.id);
+        let matches = all.filter(function (existingIndex) {
+          let parsed = moment(existingIndex, indexPattern.id);
           return existingIndex === parsed.format(indexPattern.id);
         });
 
@@ -123,7 +126,7 @@ export default function MapperService(Private, Promise, es, esAdmin, config, kbn
   function handleMissingIndexPattern(err) {
     if (err.status >= 400) {
       // transform specific error type
-      return Promise.reject(new IndexPatternMissingIndices(err.message));
+      return Promise.reject(new IndexPatternMissingIndices());
     } else {
       // rethrow all others
       throw err;
@@ -131,4 +134,4 @@ export default function MapperService(Private, Promise, es, esAdmin, config, kbn
   }
 
   return new Mapper();
-}
+};

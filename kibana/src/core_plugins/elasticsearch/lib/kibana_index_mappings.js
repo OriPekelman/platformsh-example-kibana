@@ -1,9 +1,9 @@
 'use strict';
 
-Object.defineProperty(exports, "__esModule", {
+Object.defineProperty(exports, '__esModule', {
   value: true
 });
-const mappings = exports.mappings = {
+var mappings = {
   config: {
     properties: {
       buildNum: {
@@ -20,3 +20,4 @@ const mappings = exports.mappings = {
     }
   }
 };
+exports.mappings = mappings;

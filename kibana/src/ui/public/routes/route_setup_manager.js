@@ -30,7 +30,7 @@ module.exports = class RouteSetupManager {
    */
   doWork(Promise, $injector, userWork) {
 
-    const invokeEach = (arr, locals) => {
+    let invokeEach = (arr, locals) => {
       return Promise.map(arr, fn => {
         if (!fn) return;
         return $injector.invoke(fn, null, locals);
@@ -39,16 +39,16 @@ module.exports = class RouteSetupManager {
 
     // call each error handler in order, until one of them resolves
     // or we run out of handlers
-    const callErrorHandlers = (handlers, origError) => {
+    let callErrorHandlers = (handlers, origError) => {
       if (!_.size(handlers)) throw origError;
 
       // clone so we don't discard handlers or loose them
       handlers = handlers.slice(0);
 
-      const next = (err) => {
+      let next = (err) => {
         if (!handlers.length) throw err;
 
-        const handler = handlers.shift();
+        let handler = handlers.shift();
         if (!handler) return next(err);
 
         return Promise.try(function () {
@@ -66,7 +66,7 @@ module.exports = class RouteSetupManager {
     )
     .then(() => {
       // wait for the queue to fill up, then do all the work
-      const defer = Promise.defer();
+      let defer = Promise.defer();
       userWork.resolveWhenFull(defer);
 
       return defer.promise.then(() => Promise.all(userWork.doWork()));

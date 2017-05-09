@@ -1,5 +1,7 @@
 'use strict';
 
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
 var _bluebird = require('bluebird');
 
 var _bluebird2 = _interopRequireDefault(_bluebird);
@@ -12,14 +14,16 @@ var _lodash = require('lodash');
 
 var _lodash2 = _interopRequireDefault(_lodash);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+var _util = require('util');
 
 module.exports = function (server) {
-  var _server$plugins$elast = server.plugins.elasticsearch.getCluster('admin');
+  var MAX_INTEGER = Math.pow(2, 53) - 1;
 
-  const callWithInternalUser = _server$plugins$elast.callWithInternalUser;
+  var _server$plugins$elasticsearch$getCluster = server.plugins.elasticsearch.getCluster('admin');
 
-  const config = server.config();
+  var callWithInternalUser = _server$plugins$elasticsearch$getCluster.callWithInternalUser;
+
+  var config = server.config();
 
   function createNewConfig() {
     return callWithInternalUser('create', {
@@ -31,23 +35,25 @@ module.exports = function (server) {
   }
 
   return function (response) {
+    var newConfig = {};
+
     // Check to see if there are any doc. If not then we set the build number and id
     if (response.hits.hits.length === 0) {
       return createNewConfig();
     }
 
     // if we already have a the current version in the index then we need to stop
-    const devConfig = _lodash2.default.find(response.hits.hits, function currentVersion(hit) {
+    var devConfig = _lodash2['default'].find(response.hits.hits, function currentVersion(hit) {
       return hit._id !== '@@version' && hit._id === config.get('pkg.version');
     });
 
     if (devConfig) {
-      return _bluebird2.default.resolve();
+      return _bluebird2['default'].resolve();
     }
 
     // Look for upgradeable configs. If none of them are upgradeable
     // then create a new one.
-    const body = _lodash2.default.find(response.hits.hits, _is_upgradeable2.default.bind(null, server));
+    var body = _lodash2['default'].find(response.hits.hits, _is_upgradeable2['default'].bind(null, server));
     if (!body) {
       return createNewConfig();
     }

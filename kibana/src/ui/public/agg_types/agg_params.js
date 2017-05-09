@@ -8,7 +8,9 @@ import AggTypesParamTypesStringProvider from 'ui/agg_types/param_types/string';
 import AggTypesParamTypesRawJsonProvider from 'ui/agg_types/param_types/raw_json';
 import AggTypesParamTypesBaseProvider from 'ui/agg_types/param_types/base';
 export default function AggParamsFactory(Private) {
-  const paramTypeMap = {
+
+
+  let paramTypeMap = {
     field: Private(AggTypesParamTypesFieldProvider),
     optioned: Private(AggTypesParamTypesOptionedProvider),
     regex: Private(AggTypesParamTypesRegexProvider),
@@ -35,8 +37,8 @@ export default function AggParamsFactory(Private) {
     AggParams.Super.call(this, {
       index: ['name'],
       initialSet: params.map(function (config) {
-        const type = config.name === 'field' ? config.name : config.type;
-        const Class = paramTypeMap[type] || paramTypeMap._default;
+        let type = config.name === 'field' ? config.name : config.type;
+        let Class = paramTypeMap[type] || paramTypeMap._default;
         return new Class(config);
       })
     });
@@ -57,7 +59,7 @@ export default function AggParamsFactory(Private) {
    *         are dependent on the AggParam#write methods which should be studied for each AggType.
    */
   AggParams.prototype.write = function (aggConfig, locals) {
-    const output = { params: {} };
+    let output = { params: {} };
     locals = locals || {};
 
     this.forEach(function (param) {
@@ -72,4 +74,4 @@ export default function AggParamsFactory(Private) {
   };
 
   return AggParams;
-}
+};

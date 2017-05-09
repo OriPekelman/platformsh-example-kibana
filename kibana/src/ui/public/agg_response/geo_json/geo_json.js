@@ -1,9 +1,9 @@
 import _ from 'lodash';
 import rowsToFeatures from 'ui/agg_response/geo_json/rows_to_features';
 import AggResponseGeoJsonTooltipFormatterProvider from 'ui/agg_response/geo_json/_tooltip_formatter';
-export default function TileMapConverterFn(Private) {
+export default function TileMapConverterFn(Private, timefilter, $compile, $rootScope) {
 
-  const tooltipFormatter = Private(AggResponseGeoJsonTooltipFormatterProvider);
+  let tooltipFormatter = Private(AggResponseGeoJsonTooltipFormatterProvider);
 
   return function (vis, table) {
 
@@ -13,15 +13,13 @@ export default function TileMapConverterFn(Private) {
       });
     }
 
-    const geoI = columnIndex('segment');
-    const metricI = columnIndex('metric');
-    const centroidI = _.findIndex(table.columns, (col) => col.aggConfig.type.name === 'geo_centroid');
+    let geoI = columnIndex('segment');
+    let metricI = columnIndex('metric');
+    let geoAgg = _.get(table.columns, [geoI, 'aggConfig']);
+    let metricAgg = _.get(table.columns, [metricI, 'aggConfig']);
 
-    const geoAgg = _.get(table.columns, [geoI, 'aggConfig']);
-    const metricAgg = _.get(table.columns, [metricI, 'aggConfig']);
-
-    const features = rowsToFeatures(table, geoI, metricI, centroidI);
-    const values = features.map(function (feature) {
+    let features = rowsToFeatures(table, geoI, metricI);
+    let values = features.map(function (feature) {
       return feature.properties.value;
     });
 
@@ -42,4 +40,4 @@ export default function TileMapConverterFn(Private) {
       }
     };
   };
-}
+};

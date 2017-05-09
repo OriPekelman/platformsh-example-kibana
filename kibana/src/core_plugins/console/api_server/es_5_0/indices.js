@@ -150,14 +150,4 @@ module.exports = function (api) {
     methods: ["GET"],
     patterns: ["_upgrade", "{indices}/_upgrade"]
   });
-
-  api.addEndpointDescription('_close', {
-    methods: ["POST"],
-    patterns: ["{indices}/_close"]
-  });
-
-  api.addEndpointDescription('_open', {
-    methods: ["POST"],
-    patterns: ["{indices}/_open"]
-  });
 };

@@ -1,5 +1,6 @@
+import moment from 'moment';
 import UiModules from 'ui/modules';
-import { once, clone } from 'lodash';
+import { once, clone, assign } from 'lodash';
 
 import toggleHtml from './kbn_global_timepicker.html';
 import timeNavigation from './time_navigation';
@@ -18,8 +19,7 @@ UiModules
   return {
     template: toggleHtml,
     replace: true,
-    require: '^kbnTopNav',
-    link: ($scope, element, attributes, kbnTopNav) => {
+    link: ($scope) => {
       listenForUpdates($rootScope);
 
       $rootScope.timefilter = timefilter;
@@ -28,22 +28,11 @@ UiModules
       };
 
       $scope.forward = function () {
-        timefilter.time = timeNavigation.stepForward(timefilter.getBounds());
+        assign(timefilter.time, timeNavigation.stepForward(timefilter.getBounds()));
       };
 
       $scope.back = function () {
-        timefilter.time = timeNavigation.stepBackward(timefilter.getBounds());
-      };
-
-      $scope.updateFilter = function (from, to) {
-        timefilter.time.from = from;
-        timefilter.time.to = to;
-        kbnTopNav.close('filter');
-      };
-
-      $scope.updateInterval = function (interval) {
-        timefilter.refreshInterval = interval;
-        kbnTopNav.close('interval');
+        assign(timefilter.time, timeNavigation.stepBackward(timefilter.getBounds()));
       };
     },
   };

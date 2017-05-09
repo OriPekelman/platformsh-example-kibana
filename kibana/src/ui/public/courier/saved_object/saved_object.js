@@ -12,39 +12,18 @@
 import angular from 'angular';
 import _ from 'lodash';
 
-import { SavedObjectNotFound } from 'ui/errors';
+import errors from 'ui/errors';
 import uuid from 'node-uuid';
 import MappingSetupProvider from 'ui/utils/mapping_setup';
 
 import DocSourceProvider from '../data_source/admin_doc_source';
 import SearchSourceProvider from '../data_source/search_source';
-import { getTitleAlreadyExists } from './get_title_already_exists';
 
-/**
- * An error message to be used when the user rejects a confirm overwrite.
- * @type {string}
- */
-const OVERWRITE_REJECTED = 'Overwrite confirmation was rejected';
-/**
- * An error message to be used when the user rejects a confirm save with duplicate title.
- * @type {string}
- */
-const SAVE_DUPLICATE_REJECTED = 'Save with duplicate title confirmation was rejected';
+export default function SavedObjectFactory(esAdmin, kbnIndex, Promise, Private, Notifier, safeConfirm, indexPatterns) {
 
-/**
- * @param error {Error} the error
- * @return {boolean}
- */
-function isErrorNonFatal(error) {
-  if (!error) return false;
-  return error.message === OVERWRITE_REJECTED || error.message === SAVE_DUPLICATE_REJECTED;
-}
-
-export default function SavedObjectFactory(esAdmin, kbnIndex, Promise, Private, Notifier, confirmModalPromise, indexPatterns) {
-
-  const DocSource = Private(DocSourceProvider);
-  const SearchSource = Private(SearchSourceProvider);
-  const mappingSetup = Private(MappingSetupProvider);
+  let DocSource = Private(DocSourceProvider);
+  let SearchSource = Private(SearchSourceProvider);
+  let mappingSetup = Private(MappingSetupProvider);
 
   function SavedObject(config) {
     if (!_.isObject(config)) config = {};
@@ -53,20 +32,13 @@ export default function SavedObjectFactory(esAdmin, kbnIndex, Promise, Private, 
      * Initialize config vars
      ************/
     // the doc which is used to store this object
-    const docSource = new DocSource();
+    let docSource = new DocSource();
 
     // type name for this object, used as the ES-type
-    const esType = config.type;
-    this.index = kbnIndex;
+    const type = config.type;
 
     this.getDisplayName = function () {
-      return esType;
-    };
-
-    // NOTE: this.type (not set in this file, but somewhere else) is the sub type, e.g. 'area' or
-    // 'data table', while esType is the more generic type - e.g. 'visualization' or 'saved search'.
-    this.getEsType = function () {
-      return esType;
+      return type;
     };
 
     /**
@@ -78,15 +50,15 @@ export default function SavedObjectFactory(esAdmin, kbnIndex, Promise, Private, 
     this.defaults = config.defaults || {};
 
     // Create a notifier for sending alerts
-    const notify = new Notifier({
-      location: 'Saved ' + this.getDisplayName()
+    let notify = new Notifier({
+      location: 'Saved ' + type
     });
 
     // mapping definition for the fields that this object will expose
-    const mapping = mappingSetup.expandShorthand(config.mapping);
+    let mapping = mappingSetup.expandShorthand(config.mapping);
 
-    const afterESResp = config.afterESResp || _.noop;
-    const customInit = config.init || _.noop;
+    let afterESResp = config.afterESResp || _.noop;
+    let customInit = config.init || _.noop;
 
     // optional search source which this object configures
     this.searchSource = config.searchSource ? new SearchSource() : undefined;
@@ -109,8 +81,8 @@ export default function SavedObjectFactory(esAdmin, kbnIndex, Promise, Private, 
         state = {};
       }
 
-      const oldState = this.searchSource.toJSON();
-      const fnProps = _.transform(oldState, function (dynamic, val, name) {
+      let oldState = this.searchSource.toJSON();
+      let fnProps = _.transform(oldState, function (dynamic, val, name) {
         if (_.isFunction(val)) dynamic[name] = val;
       }, {});
 
@@ -124,9 +96,7 @@ export default function SavedObjectFactory(esAdmin, kbnIndex, Promise, Private, 
      * @return {Promise<IndexPattern | null>}
      */
     const hydrateIndexPattern = () => {
-      if (!this.searchSource) {
-        return Promise.resolve(null);
-      }
+      if (!this.searchSource) { return Promise.resolve(null); }
 
       if (config.clearSavedIndexPattern) {
         this.searchSource.set('index', undefined);
@@ -135,9 +105,7 @@ export default function SavedObjectFactory(esAdmin, kbnIndex, Promise, Private, 
 
       let index = config.indexPattern || this.searchSource.getOwn('index');
 
-      if (!index) {
-        return Promise.resolve(null);
-      }
+      if (!index) { return Promise.resolve(null); }
 
       // If index is not an IndexPattern object at this point, then it's a string id of an index.
       if (!(index instanceof indexPatterns.IndexPattern)) {
@@ -160,16 +128,17 @@ export default function SavedObjectFactory(esAdmin, kbnIndex, Promise, Private, 
      * @resolved {SavedObject}
      */
     this.init = _.once(() => {
-      // ensure that the esType is defined
-      if (!esType) throw new Error('You must define a type name to use SavedObject objects.');
+      // ensure that the type is defined
+      if (!type) throw new Error('You must define a type name to use SavedObject objects.');
 
       // tell the docSource where to find the doc
       docSource
         .index(kbnIndex)
-        .type(esType)
+        .type(type)
         .id(this.id);
-      // check that the mapping for this esType is defined
-      return mappingSetup.isDefined(esType)
+
+      // check that the mapping for this type is defined
+      return mappingSetup.isDefined(type)
         .then((defined) => {
           // if it is already defined skip this step
           if (defined) return true;
@@ -183,8 +152,8 @@ export default function SavedObjectFactory(esAdmin, kbnIndex, Promise, Private, 
             }
           };
 
-          // tell mappingSetup to set esType
-          return mappingSetup.setup(esType, mapping);
+            // tell mappingSetup to set type
+          return mappingSetup.setup(type, mapping);
         })
         .then(() => {
           // If there is not id, then there is no document to fetch from elasticsearch
@@ -211,9 +180,9 @@ export default function SavedObjectFactory(esAdmin, kbnIndex, Promise, Private, 
     this.applyESResp = (resp) => {
       this._source = _.cloneDeep(resp._source);
 
-      if (resp.found != null && !resp.found) throw new SavedObjectNotFound(esType, this.id);
+      if (resp.found != null && !resp.found) throw new errors.SavedObjectNotFound(type, this.id);
 
-      const meta = resp._source.kibanaSavedObjectMeta || {};
+      let meta = resp._source.kibanaSavedObjectMeta || {};
       delete resp._source.kibanaSavedObjectMeta;
 
       if (!config.indexPattern && this._source.indexPattern) {
@@ -254,7 +223,7 @@ export default function SavedObjectFactory(esAdmin, kbnIndex, Promise, Private, 
      * @return {Object}
      */
     this.serialize = () => {
-      const body = {};
+      let body = {};
 
       _.forOwn(mapping, (fieldMapping, fieldName) => {
         if (this[fieldName] != null) {
@@ -290,6 +259,12 @@ export default function SavedObjectFactory(esAdmin, kbnIndex, Promise, Private, 
     }
 
     /**
+     * An error message to be used when the user rejects a confirm overwrite.
+     * @type {string}
+     */
+    const OVERWRITE_REJECTED = 'Overwrite confirmation was rejected';
+
+    /**
      * Attempts to create the current object using the serialized source. If an object already
      * exists, a warning message requests an overwrite confirmation.
      * @param source - serialized version of this object (return value from this.serialize())
@@ -307,7 +282,7 @@ export default function SavedObjectFactory(esAdmin, kbnIndex, Promise, Private, 
           if (_.get(err, 'origError.status') === 409) {
             const confirmMessage = `Are you sure you want to overwrite ${this.title}?`;
 
-            return confirmModalPromise(confirmMessage, { confirmButtonText: `Overwrite ${this.getDisplayName()}` })
+            return safeConfirm(confirmMessage)
               .then(() => docSource.doIndex(source))
               .catch(() => Promise.reject(new Error(OVERWRITE_REJECTED)));
           }
@@ -315,27 +290,6 @@ export default function SavedObjectFactory(esAdmin, kbnIndex, Promise, Private, 
         });
     };
 
-    /**
-     * Returns a promise that resolves to true if either the title is unique, or if the user confirmed they
-     * wished to save the duplicate title.  Promise is rejected if the user rejects the confirmation.
-     */
-    const warnIfDuplicateTitle = () => {
-      // Don't warn if the user isn't updating the title, otherwise that would become very annoying to have
-      // to confirm the save every time, except when copyOnSave is true, then we do want to check.
-      if (this.title === this.lastSavedTitle && !this.copyOnSave) {
-        return Promise.resolve();
-      }
-
-      return getTitleAlreadyExists(this, esAdmin)
-        .then((duplicateTitle) => {
-          if (!duplicateTitle) return true;
-          const confirmMessage =
-            `A ${this.getDisplayName()} with the title '${duplicateTitle}' already exists. Would you like to save anyway?`;
-
-          return confirmModalPromise(confirmMessage, { confirmButtonText: `Save ${this.getDisplayName()}` })
-            .catch(() => Promise.reject(new Error(SAVE_DUPLICATE_REJECTED)));
-        });
-    };
 
     /**
      * @typedef {Object} SaveOptions
@@ -352,7 +306,7 @@ export default function SavedObjectFactory(esAdmin, kbnIndex, Promise, Private, 
      */
     this.save = (saveOptions = {}) => {
       // Save the original id in case the save fails.
-      const originalId = this.id;
+      let originalId = this.id;
       // Read https://github.com/elastic/kibana/issues/9056 and
       // https://github.com/elastic/kibana/issues/9012 for some background into why this copyOnSave variable
       // exists.
@@ -368,17 +322,12 @@ export default function SavedObjectFactory(esAdmin, kbnIndex, Promise, Private, 
       // ensure that the docSource has the current id
       docSource.id(this.id);
 
-      const source = this.serialize();
+      let source = this.serialize();
 
       this.isSaving = true;
-
-      return warnIfDuplicateTitle()
-        .then(() => {
-          return saveOptions.confirmOverwrite ? createSource(source) : docSource.doIndex(source);
-        })
-        .then((id) => {
-          this.id = id;
-        })
+      const doSave = saveOptions.confirmOverwrite ? createSource(source) : docSource.doIndex(source);
+      return doSave
+        .then((id) => { this.id = id; })
         .then(refreshIndex)
         .then(() => {
           this.isSaving = false;
@@ -388,9 +337,7 @@ export default function SavedObjectFactory(esAdmin, kbnIndex, Promise, Private, 
         .catch((err) => {
           this.isSaving = false;
           this.id = originalId;
-          if (isErrorNonFatal(err)) {
-            return;
-          }
+          if (err && err.message === OVERWRITE_REJECTED) return;
           return Promise.reject(err);
         });
     };
@@ -410,14 +357,12 @@ export default function SavedObjectFactory(esAdmin, kbnIndex, Promise, Private, 
       return esAdmin.delete(
         {
           index: kbnIndex,
-          type: esType,
+          type: type,
           id: this.id
         })
-        .then(() => {
-          return refreshIndex();
-        });
+        .then(() => { return refreshIndex(); });
     };
   }
 
   return SavedObject;
-}
+};

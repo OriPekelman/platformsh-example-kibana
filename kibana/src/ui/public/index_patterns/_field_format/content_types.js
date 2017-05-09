@@ -1,9 +1,9 @@
 import _ from 'lodash';
 import angular from 'angular';
-import { getHighlightHtml } from 'ui/highlight';
-export default function contentTypesProvider() {
+import 'ui/highlight';
+export default function contentTypesProvider(highlightFilter) {
 
-  const types = {
+  let types = {
     html: function (format, convert) {
       return function recurse(value, field, hit) {
         if (value == null) {
@@ -14,10 +14,10 @@ export default function contentTypesProvider() {
           return convert.call(format, value, field, hit);
         }
 
-        const subVals = value.map(function (v) {
+        let subVals = value.map(function (v) {
           return recurse(v, field, hit);
         });
-        const useMultiLine = subVals.some(function (sub) {
+        let useMultiLine = subVals.some(function (sub) {
           return sub.indexOf('\n') > -1;
         });
 
@@ -42,18 +42,18 @@ export default function contentTypesProvider() {
   }
 
   function fallbackHtml(value, field, hit) {
-    const formatted = _.escape(this.convert(value, 'text'));
+    let formatted = _.escape(this.convert(value, 'text'));
 
     if (!hit || !hit.highlight || !hit.highlight[field.name]) {
       return formatted;
     } else {
-      return getHighlightHtml(formatted, hit.highlight[field.name]);
+      return highlightFilter(formatted, hit.highlight[field.name]);
     }
   }
 
   function setup(format) {
-    const src = format._convert || {};
-    const converters = format._convert = {};
+    let src = format._convert || {};
+    let converters = format._convert = {};
 
     converters.text = types.text(format, src.text || fallbackText);
     converters.html = types.html(format, src.html || fallbackHtml);
@@ -65,4 +65,4 @@ export default function contentTypesProvider() {
     types: types,
     setup: setup
   };
-}
+};

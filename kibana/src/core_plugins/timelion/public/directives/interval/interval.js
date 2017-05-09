@@ -1,10 +1,11 @@
-import _ from 'lodash';
-import $ from 'jquery';
+var _ = require('lodash');
+var $ = require('jquery');
+var moment = require('moment');
 
-const app = require('ui/modules').get('apps/timelion', []);
-import html from './interval.html';
+var app = require('ui/modules').get('apps/timelion', []);
+var html = require('./interval.html');
 
-app.directive('timelionInterval', function ($compile, $timeout) {
+app.directive('timelionInterval', function ($compile, $timeout, timefilter) {
   return {
     restrict: 'E',
     scope: {

@@ -1,11 +1,11 @@
-import _ from 'lodash';
-import $ from 'jquery';
-import grammar from 'raw!../chain.peg';
-import PEG from 'pegjs';
-const Parser = PEG.buildParser(grammar);
-import template from './partials/suggestion.html';
+var _ = require('lodash');
+var $ = require('jquery');
+var grammar = require('raw!../chain.peg');
+var PEG = require('pegjs');
+var Parser = PEG.buildParser(grammar);
+var template =  require('./partials/suggestion.html');
 
-const app = require('ui/modules').get('apps/timelion', []);
+var app = require('ui/modules').get('apps/timelion', []);
 
 /*
 Autocomplete proposal, this file doesn't actually work like this
@@ -34,13 +34,13 @@ Must be inside a function, and start must be adjacent to the argument name
 
 */
 
-app.directive('timelionExpression', function ($compile, $http, $timeout, $rootScope) {
+app.directive('timelionExpression', function ($compile, $http, $timeout, $rootScope, config) {
   return {
     restrict: 'A',
     require: 'ngModel',
     link: function ($scope, $elem, $attrs, ngModelCtrl) {
 
-      const keys = {
+      var keys = {
         ESC: 27,
         UP: 38,
         DOWN: 40,
@@ -48,7 +48,7 @@ app.directive('timelionExpression', function ($compile, $http, $timeout, $rootSc
         ENTER: 13
       };
 
-      const functionReference = {};
+      var functionReference = {};
 
       function init() {
         resetSuggestions();
@@ -81,7 +81,7 @@ app.directive('timelionExpression', function ($compile, $http, $timeout, $rootSc
       function suggest(val) {
         try {
           // Inside an existing function providing suggestion only as a reference. Maybe suggest an argument?
-          const possible = findFunction(getCaretPos(), Parser.parse(val).functions);
+          var possible = findFunction(getCaretPos(), Parser.parse(val).functions);
           // TODO: Reference suggestors. Only supporting completion right now;
           resetSuggestions();
           return;
@@ -124,20 +124,20 @@ app.directive('timelionExpression', function ($compile, $http, $timeout, $rootSc
       }
 
       function validateSelection() {
-        const maxSelection = $scope.suggestions.list.length - 1;
+        var maxSelection = $scope.suggestions.list.length - 1;
         if ($scope.suggestions.selected > maxSelection) $scope.suggestions.selected = maxSelection;
         else if ($scope.suggestions.selected < 0) $scope.suggestions.selected = 0;
       }
 
       $scope.completeExpression = function (selected) {
         if (!$scope.suggestions.list.length) return;
-        const expression = $attrs.timelionExpression;
-        const startOf = expression.slice(0, $scope.suggestions.location.min);
-        const endOf =  expression.slice($scope.suggestions.location.max, expression.length);
+        var expression = $attrs.timelionExpression;
+        var startOf = expression.slice(0, $scope.suggestions.location.min);
+        var endOf =  expression.slice($scope.suggestions.location.max, expression.length);
 
-        const completeFunction = $scope.suggestions.list[selected].name + '()';
+        var completeFunction = $scope.suggestions.list[selected].name + '()';
 
-        const newVal = startOf + completeFunction + endOf;
+        var newVal = startOf + completeFunction + endOf;
 
         $elem.val(newVal);
         $elem[0].selectionStart = $elem[0].selectionEnd =
@@ -195,8 +195,8 @@ app.directive('timelionExpression', function ($compile, $http, $timeout, $rootSc
 
       function scrollTo(suggestions) {
         validateSelection();
-        const suggestionsListElem = $('.suggestions');
-        const suggestedElem = $($('.suggestion')[suggestions.selected]);
+        var suggestionsListElem = $('.suggestions');
+        var suggestedElem = $($('.suggestion')[suggestions.selected]);
 
         if (!suggestedElem.position() || !suggestedElem.position().top) return;
 
@@ -204,7 +204,7 @@ app.directive('timelionExpression', function ($compile, $http, $timeout, $rootSc
       }
 
       function findFunction(position, functionList) {
-        let bestFunction;
+        var bestFunction;
 
         _.each(functionList, function (func) {
           if ((func.location.min) < position && position < (func.location.max)) {
@@ -215,11 +215,11 @@ app.directive('timelionExpression', function ($compile, $http, $timeout, $rootSc
         });
 
         return bestFunction;
-      }
+      };
 
       function getCaretPos() {
         return $elem[0].selectionStart;
-      }
+      };
 
       function digest() {
         $rootScope.$$phase || $scope.$digest();

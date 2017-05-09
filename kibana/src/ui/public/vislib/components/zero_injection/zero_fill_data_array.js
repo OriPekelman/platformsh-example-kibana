@@ -1,5 +1,5 @@
 import _ from 'lodash';
-export default function ZeroFillDataArrayUtilService() {
+export default function ZeroFillDataArrayUtilService(Private) {
 
   /*
    * Accepts an array of zero-filled y value objects (arr1)
@@ -29,4 +29,4 @@ export default function ZeroFillDataArrayUtilService() {
 
     return arr1;
   };
-}
+};

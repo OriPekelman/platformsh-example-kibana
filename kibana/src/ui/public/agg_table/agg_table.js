@@ -4,13 +4,10 @@ import 'ui/agg_table/agg_table.less';
 import _ from 'lodash';
 import uiModules from 'ui/modules';
 import aggTableTemplate from 'ui/agg_table/agg_table.html';
-import RegistryFieldFormatsProvider from 'ui/registry/field_formats';
 
 uiModules
 .get('kibana')
 .directive('kbnAggTable', function ($filter, config, Private, compileRecursiveDirective) {
-  const fieldFormats = Private(RegistryFieldFormatsProvider);
-  const numberFormatter = fieldFormats.getDefaultInstance('number').getConverterFor('html');
 
   return {
     restrict: 'E',
@@ -30,7 +27,7 @@ uiModules
       return compileRecursiveDirective.compile($el);
     },
     controller: function ($scope) {
-      const self = this;
+      let self = this;
 
       self._saveAs = require('@spalger/filesaver').saveAs;
       self.csv = {
@@ -39,15 +36,15 @@ uiModules
       };
 
       self.exportAsCsv = function (formatted) {
-        const csv = new Blob([self.toCsv(formatted)], { type: 'text/plain;charset=utf-8' });
+        let csv = new Blob([self.toCsv(formatted)], { type: 'text/plain;charset=utf-8' });
         self._saveAs(csv, self.csv.filename);
       };
 
       self.toCsv = function (formatted) {
-        const rows = $scope.table.rows;
-        const columns = formatted ? $scope.formattedColumns : $scope.table.columns;
-        const nonAlphaNumRE = /[^a-zA-Z0-9]/;
-        const allDoubleQuoteRE = /"/g;
+        let rows = $scope.table.rows;
+        let columns = formatted ? $scope.formattedColumns : $scope.table.columns;
+        let nonAlphaNumRE = /[^a-zA-Z0-9]/;
+        let allDoubleQuoteRE = /"/g;
 
         function escape(val) {
           if (!formatted && _.isObject(val)) val = val.valueOf();
@@ -59,7 +56,7 @@ uiModules
         }
 
         // escape each cell in each row
-        const csvRows = rows.map(function (row) {
+        let csvRows = rows.map(function (row) {
           return row.map(escape);
         });
 
@@ -74,7 +71,7 @@ uiModules
       };
 
       $scope.$watch('table', function () {
-        const table = $scope.table;
+        let table = $scope.table;
 
         if (!table) {
           $scope.rows = null;
@@ -85,72 +82,42 @@ uiModules
         self.csv.filename = ($scope.exportTitle || table.title() || 'table') + '.csv';
         $scope.rows = table.rows;
         $scope.formattedColumns = table.columns.map(function (col, i) {
-          const agg = $scope.table.aggConfig(col);
-          const field = agg.getField();
-          const formattedColumn = {
+          let agg = $scope.table.aggConfig(col);
+          let field = agg.getField();
+          let formattedColumn = {
             title: col.title,
             filterable: field && field.filterable && agg.schema.group === 'buckets'
           };
 
-          const last = i === (table.columns.length - 1);
+          let last = i === (table.columns.length - 1);
 
           if (last || (agg.schema.group === 'metrics')) {
             formattedColumn.class = 'visualize-table-right';
           }
 
-          let isFieldNumeric = false;
-          let isFieldDate = false;
-          const aggType = agg.type;
-          if (aggType && aggType.type === 'metrics') {
-            if (aggType.name === 'top_hits') {
-              if (agg._opts.params.aggregate !== 'concat') {
-                // all other aggregate types for top_hits output numbers
-                // so treat this field as numeric
-                isFieldNumeric = true;
-              }
-            } else if (field) {
-              // if the metric has a field, check if it is either number or date
-              isFieldNumeric = field.type === 'number';
-              isFieldDate = field.type === 'date';
-            } else {
-              // if there is no field, then it is count or similar so just say number
-              isFieldNumeric = true;
-            }
-          } else if (field) {
-            isFieldNumeric = field.type === 'number';
-            isFieldDate = field.type === 'date';
-          }
+          const isFieldNumeric = (field && field.type === 'number');
+          const isFirstValueNumeric = _.isNumber(_.get(table, `rows[0][${i}].value`));
 
-          if (isFieldNumeric || isFieldDate || $scope.totalFunc === 'count') {
+          if (isFieldNumeric || isFirstValueNumeric) {
             function sum(tableRows) {
-              return _.reduce(tableRows, function (prev, curr) {
-                // some metrics return undefined for some of the values
-                // derivative is an example of this as it returns undefined in the first row
-                if (curr[i].value === undefined) return prev;
-                return prev + curr[i].value;
-              }, 0);
+              return _.reduce(tableRows, function (prev, curr, n, all) {return prev + curr[i].value; }, 0);
             }
-            const formatter = agg.fieldFormatter('html');
 
             switch ($scope.totalFunc) {
               case 'sum':
-                if (!isFieldDate) {
-                  formattedColumn.total = formatter(sum(table.rows));
-                }
+                formattedColumn.total = sum(table.rows);
                 break;
               case 'avg':
-                if (!isFieldDate) {
-                  formattedColumn.total = formatter(sum(table.rows) / table.rows.length);
-                }
+                formattedColumn.total = sum(table.rows) / table.rows.length;
                 break;
               case 'min':
-                formattedColumn.total = formatter(_.chain(table.rows).map(i).map('value').min().value());
+                formattedColumn.total = _.chain(table.rows).map(i).map('value').min().value();
                 break;
               case 'max':
-                formattedColumn.total = formatter(_.chain(table.rows).map(i).map('value').max().value());
+                formattedColumn.total = _.chain(table.rows).map(i).map('value').max().value();
                 break;
               case 'count':
-                formattedColumn.total = numberFormatter(table.rows.length);
+                formattedColumn.total = table.rows.length;
                 break;
               default:
                 break;

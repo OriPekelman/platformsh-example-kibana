@@ -1,11 +1,13 @@
 'use strict';
 
-module.exports = function (kibana) {
-  let mainFile = 'plugins/timelion/app';
+var path = require('path');
 
-  const ownDescriptor = Object.getOwnPropertyDescriptor(kibana, 'autoload');
-  const protoDescriptor = Object.getOwnPropertyDescriptor(kibana.constructor.prototype, 'autoload');
-  const descriptor = ownDescriptor || protoDescriptor || {};
+module.exports = function (kibana) {
+  var mainFile = 'plugins/timelion/app';
+
+  var ownDescriptor = Object.getOwnPropertyDescriptor(kibana, 'autoload');
+  var protoDescriptor = Object.getOwnPropertyDescriptor(kibana.constructor.prototype, 'autoload');
+  var descriptor = ownDescriptor || protoDescriptor || {};
   if (descriptor.get) {
     // the autoload list has been replaced with a getter that complains about
     // improper access, bypass that getter by seeing if it is defined
@@ -21,8 +23,8 @@ module.exports = function (kibana) {
         description: 'Time series expressions for everything',
         icon: 'plugins/timelion/icon.svg',
         main: mainFile,
-        injectVars: function injectVars(server) {
-          const config = server.config();
+        injectVars: function injectVars(server, options) {
+          var config = server.config();
           return {
             kbnIndex: config.get('kibana.index'),
             esShardTimeout: config.get('elasticsearch.shardTimeout'),

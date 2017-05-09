@@ -1,8 +1,9 @@
+import _ from 'lodash';
 export default function PatternCache() {
 
-  const vals = {};
+  let vals = {};
 
-  const validId = function (id) {
+  let validId = function (id) {
     return typeof id !== 'object';
   };
 
@@ -18,4 +19,4 @@ export default function PatternCache() {
   this.clear = this.delete = function (id) {
     if (validId(id)) delete vals[id];
   };
-}
+};

@@ -11,14 +11,13 @@
     href="{{ getHref() }}"
     ng-click="onClick({ $event: $event })"
     data-test-subj="appLink"
+    title="{{ title }}"
   >
     <div class="global-nav-link__icon">
-      <!-- Empty alt attribute is for accessibility -->
       <img
         ng-if="icon"
         class="global-nav-link__icon-image"
         kbn-src="{{ '/' + icon }}"
-        alt=""
       >
 
       <span
@@ -26,12 +25,12 @@
         class="global-nav-link__icon-placeholder"
         data-test-subj="appLinkIconPlaceholder"
       >
-        {{ label[0] }}
+        {{ title[0] }}
       </span>
     </div>
 
     <div class="global-nav-link__title">
-      {{ label }}
+      {{ title }}
     </div>
   </a>
 </div>

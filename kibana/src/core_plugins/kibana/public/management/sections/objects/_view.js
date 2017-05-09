@@ -13,7 +13,7 @@ uiRoutes
 });
 
 uiModules.get('apps/management')
-.directive('kbnManagementObjectsView', function (kbnIndex, Notifier, confirmModal) {
+.directive('kbnManagementObjectsView', function (kbnIndex, Notifier) {
   return {
     restrict: 'E',
     controller: function ($scope, $injector, $routeParams, $location, $window, $rootScope, esAdmin, Private) {
@@ -115,14 +115,7 @@ uiModules.get('apps/management')
 
         const fields =  _.reduce(obj._source, createField, []);
         if (service.Class) readObjectClass(fields, service.Class);
-
-        // sorts twice since we want numerical sort to prioritize over name,
-        // and sortBy will do string comparison if trying to match against strings
-        const nameSortedFields = _.sortBy(fields, 'name');
-        $scope.fields = _.sortBy(nameSortedFields, (field) => {
-          const orderIndex = service.Class.fieldOrder ? service.Class.fieldOrder.indexOf(field.name) : -1;
-          return (orderIndex > -1) ? orderIndex : Infinity;
-        });
+        $scope.fields = _.sortBy(fields, 'name');
       })
       .catch(notify.fatal);
 
@@ -147,7 +140,7 @@ uiModules.get('apps/management')
         session.setUseSoftTabs(true);
         session.on('changeAnnotation', function () {
           const annotations = session.getAnnotations();
-          if (_.some(annotations, { type: 'error' })) {
+          if (_.some(annotations, { type: 'error'})) {
             if (!_.contains($scope.aceInvalidEditors, fieldName)) {
               $scope.aceInvalidEditors.push(fieldName);
             }
@@ -170,25 +163,15 @@ uiModules.get('apps/management')
        * @returns {type} description
        */
       $scope.delete = function () {
-        function doDelete() {
-          esAdmin.delete({
-            index: kbnIndex,
-            type: service.type,
-            id: $routeParams.id
-          })
-            .then(function () {
-              return redirectHandler('deleted');
-            })
-            .catch(notify.fatal);
-        }
-        const confirmModalOptions = {
-          onConfirm: doDelete,
-          confirmButtonText: 'Delete object'
-        };
-        confirmModal(
-          'Are you sure want to delete this object? This action is irreversible!',
-          confirmModalOptions
-        );
+        esAdmin.delete({
+          index: kbnIndex,
+          type: service.type,
+          id: $routeParams.id
+        })
+        .then(function (resp) {
+          return redirectHandler('deleted');
+        })
+        .catch(notify.fatal);
       };
 
       $scope.submit = function () {
@@ -214,7 +197,7 @@ uiModules.get('apps/management')
           id: $routeParams.id,
           body: source
         })
-        .then(function () {
+        .then(function (resp) {
           return redirectHandler('updated');
         })
         .catch(notify.fatal);
@@ -224,7 +207,7 @@ uiModules.get('apps/management')
         return esAdmin.indices.refresh({
           index: kbnIndex
         })
-        .then(function () {
+        .then(function (resp) {
           const msg = 'You successfully ' + action + ' the "' + $scope.obj._source.title + '" ' + $scope.title.toLowerCase() + ' object';
 
           $location.path('/management/kibana/objects').search({

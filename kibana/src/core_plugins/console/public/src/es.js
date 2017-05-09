@@ -1,6 +1,5 @@
-import { stringify as formatQueryString } from 'querystring'
-
-import $ from 'jquery';
+let _ = require('lodash');
+let $ = require('jquery');
 
 let esVersion = [];
 
@@ -8,7 +7,7 @@ module.exports.getVersion = function () {
   return esVersion;
 };
 
-module.exports.send = function (method, path, data) {
+module.exports.send = function (method, path, data, server, disable_auth_alert) {
   var wrappedDfd = $.Deferred();
 
   console.log("Calling " + path);
@@ -16,33 +15,27 @@ module.exports.send = function (method, path, data) {
     method = "POST";
   }
 
+  // delayed loading for circular references
+  var settings = require("./settings");
+
   let contentType;
   if (data) {
     try {
       JSON.parse(data);
       contentType = 'application/json';
-    }
-    catch (e) {
-      try {
-        data.split('\n').forEach(line => {
-          if (!line) return;
-          JSON.parse(line);
-        });
-        contentType = 'application/x-ndjson';
-      } catch (e){
-        contentType = 'text/plain';
-      }
+    } catch (e) {
+      contentType = 'text/plain';
     }
   }
 
   var options = {
-    url: '../api/console/proxy?' + formatQueryString({ path, method }),
-    data,
+    url: '../api/console/proxy?uri=' + encodeURIComponent(path),
+    data: method == "GET" ? null : data,
     contentType,
     cache: false,
     crossDomain: true,
-    type: 'POST',
-    dataType: 'text', // disable automatic guessing
+    type: method,
+    dataType: "text", // disable automatic guessing
   };
 
 

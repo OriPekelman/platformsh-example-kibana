@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import AggResponseTabifyTabifyProvider from 'ui/agg_response/tabify/tabify';
 import uiModules from 'ui/modules';
 // get the kibana/metric_vis module, and make sure that it requires the "kibana" module if it
@@ -9,14 +10,21 @@ module.controller('KbnMetricVisController', function ($scope, $element, Private)
 
   const metrics = $scope.metrics = [];
 
+  function isInvalid(val) {
+    return _.isUndefined(val) || _.isNull(val) || _.isNaN(val);
+  }
+
   $scope.processTableGroups = function (tableGroups) {
     tableGroups.tables.forEach(function (table) {
       table.columns.forEach(function (column, i) {
-        const value = table.rows[0][i];
+        const fieldFormatter = table.aggConfig(column).fieldFormatter();
+        let value = table.rows[0][i];
+
+        value = isInvalid(value) ? '?' : fieldFormatter(value);
 
         metrics.push({
           label: column.title,
-          value: value.toString('html')
+          value: value
         });
       });
     });
@@ -24,12 +32,8 @@ module.controller('KbnMetricVisController', function ($scope, $element, Private)
 
   $scope.$watch('esResponse', function (resp) {
     if (resp) {
-      const options = {
-        asAggConfigResults: true
-      };
-
       metrics.length = 0;
-      $scope.processTableGroups(tabifyAggResponse($scope.vis, resp, options));
+      $scope.processTableGroups(tabifyAggResponse($scope.vis, resp));
       $element.trigger('renderComplete');
     }
   });

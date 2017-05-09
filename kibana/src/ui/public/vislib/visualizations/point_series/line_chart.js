@@ -11,7 +11,6 @@ export default function LineChartFactory(Private) {
     radiusRatio: 9,
     showLines: true,
     interpolate: 'linear',
-    lineWidth: 2,
     color: undefined,
     fillColor: undefined
   };
@@ -41,7 +40,6 @@ export default function LineChartFactory(Private) {
       const tooltip = this.baseChart.tooltip;
       const isTooltip = this.handler.visConfig.get('tooltip.show');
       const isHorizontal = this.getCategoryAxis().axisConfig.isHorizontal();
-      const lineWidth = this.seriesConfig.lineWidth;
 
       const radii =  this.baseChart.radii;
 
@@ -71,9 +69,7 @@ export default function LineChartFactory(Private) {
       }
 
       function cy(d) {
-        const y0 = d.y0 || 0;
-        const y = d.y || 0;
-        return yScale(y0 + y);
+        return yScale(d.y);
       }
 
       function cColor(d) {
@@ -92,13 +88,12 @@ export default function LineChartFactory(Private) {
 
       function getCircleRadiusFn(modifier) {
         return function getCircleRadius(d) {
+          const margin = self.handler.visConfig.get('style.margin');
           const width = self.baseChart.chartConfig.width;
           const height = self.baseChart.chartConfig.height;
           const circleRadius = (d.z - radii.min) / radiusStep;
-          const baseMagicNumber = 2;
 
-          const base = circleRadius ? Math.sqrt(circleRadius + baseMagicNumber) + lineWidth : lineWidth;
-          return _.min([base, width, height]) + (modifier || 0);
+          return _.min([Math.sqrt((circleRadius || 2) + 2), width, height]) + (modifier || 0);
         };
       }
 
@@ -130,7 +125,7 @@ export default function LineChartFactory(Private) {
       }
 
       return circles;
-    }
+    };
 
     /**
      * Adds path to SVG
@@ -143,9 +138,9 @@ export default function LineChartFactory(Private) {
     addLine(svg, data) {
       const xScale = this.getCategoryAxis().getScale();
       const yScale = this.getValueAxis().getScale();
+      const xAxisFormatter = this.handler.data.get('xAxisFormatter');
       const color = this.handler.data.getColorFunc();
       const ordered = this.handler.data.get('ordered');
-      const lineWidth = this.seriesConfig.lineWidth;
       const interpolate = this.seriesConfig.interpolate;
       const isHorizontal = this.getCategoryAxis().axisConfig.isHorizontal();
 
@@ -161,9 +156,7 @@ export default function LineChartFactory(Private) {
       }
 
       function cy(d) {
-        const y = d.y || 0;
-        const y0 = d.y0 || 0;
-        return yScale(y0 + y);
+        return yScale(d.y);
       }
 
       line.append('path')
@@ -176,18 +169,16 @@ export default function LineChartFactory(Private) {
           .interpolate(interpolate)
           .x(isHorizontal ? cx : cy)
           .y(isHorizontal ? cy : cx);
-        return d3Line(data.values.filter(function (d) {
-          return !_.isNull(d.y);
-        }));
+        return d3Line(data.values);
       })
       .attr('fill', 'none')
       .attr('stroke', () => {
         return color(data.label);
       })
-      .attr('stroke-width', lineWidth);
+      .attr('stroke-width', 2);
 
       return line;
-    }
+    };
 
     /**
      * Renders d3 visualization
@@ -217,8 +208,8 @@ export default function LineChartFactory(Private) {
           return svg;
         });
       };
-    }
+    };
   }
 
   return LineChart;
-}
+};

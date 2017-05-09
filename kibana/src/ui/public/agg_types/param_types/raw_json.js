@@ -3,7 +3,7 @@ import editorHtml from 'ui/agg_types/controls/raw_json.html';
 import AggTypesParamTypesBaseProvider from 'ui/agg_types/param_types/base';
 export default function RawJSONAggParamFactory(Private) {
 
-  const BaseAggParam = Private(AggTypesParamTypesBaseProvider);
+  let BaseAggParam = Private(AggTypesParamTypesBaseProvider);
 
   _.class(RawJSONAggParam).inherits(BaseAggParam);
   function RawJSONAggParam(config) {
@@ -26,7 +26,7 @@ export default function RawJSONAggParamFactory(Private) {
    */
   RawJSONAggParam.prototype.write = function (aggConfig, output) {
     let paramJSON;
-    const param = aggConfig.params[this.name];
+    let param = aggConfig.params[this.name];
 
     if (!param) {
       return;
@@ -45,7 +45,7 @@ export default function RawJSONAggParamFactory(Private) {
         .keys()
         .union(_.keys(b))
         .transform(function (dest, key) {
-          const val = compare(a[key], b[key]);
+          let val = compare(a[key], b[key]);
           if (val !== undefined) dest[key] = val;
         }, {})
         .value();
@@ -74,4 +74,4 @@ export default function RawJSONAggParamFactory(Private) {
   };
 
   return RawJSONAggParam;
-}
+};

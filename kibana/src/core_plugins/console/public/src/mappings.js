@@ -1,5 +1,6 @@
 let $ = require('jquery');
 let _ = require('lodash');
+let utils = require('./utils');
 let es = require('./es');
 let settings = require('./settings');
 
@@ -88,7 +89,7 @@ function getTypes(indices) {
     }
 
     // filter what we need
-    $.each(type_dict, function (type) {
+    $.each(type_dict, function (type, fields) {
       ret.push(type);
     });
 
@@ -154,7 +155,7 @@ function getFieldNamesFromFieldMapping(field_name, field_mapping) {
     return applyPathSettings(nested_fields);
   }
 
-  var ret = { name: field_name, type: field_type };
+  var ret = {name: field_name, type: field_type};
 
   if (field_mapping["index_name"]) {
     ret.name = field_mapping["index_name"];
@@ -286,5 +287,5 @@ module.exports = _.assign(mappingObj, {
   loadAliases: loadAliases,
   expandAliases: expandAliases,
   clear: clear,
-  startRetrievingAutoCompleteInfo: autocomplete_retriever
+  retrieveAutocompleteInfoFromServer: retrieveAutocompleteInfoFromServer
 });

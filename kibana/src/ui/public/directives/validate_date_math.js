@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import dateMath from '@elastic/datemath';
 import uiModules from 'ui/modules';
 
@@ -18,7 +19,7 @@ uiModules.get('kibana').directive('validateDateMath', function () {
           return null;
         }
 
-        const moment = dateMath.parse(input);
+        let moment = dateMath.parse(input);
         ngModel.$setValidity('validDateMath', moment != null && moment.isValid());
         return input;
       }

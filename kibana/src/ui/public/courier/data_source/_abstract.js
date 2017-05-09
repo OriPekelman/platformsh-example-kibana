@@ -8,17 +8,15 @@ import ErrorHandlersProvider from '../_error_handlers';
 import FetchProvider from '../fetch';
 import DecorateQueryProvider from './_decorate_query';
 import FieldWildcardProvider from '../../field_wildcard';
-import { getHighlightRequestProvider } from '../../highlight';
 
 export default function SourceAbstractFactory(Private, Promise, PromiseEmitter) {
-  const requestQueue = Private(RequestQueueProvider);
-  const errorHandlers = Private(ErrorHandlersProvider);
-  const courierFetch = Private(FetchProvider);
-  const { fieldWildcardFilter } = Private(FieldWildcardProvider);
-  const getHighlightRequest = Private(getHighlightRequestProvider);
+  let requestQueue = Private(RequestQueueProvider);
+  let errorHandlers = Private(ErrorHandlersProvider);
+  let courierFetch = Private(FetchProvider);
+  let { fieldWildcardFilter } = Private(FieldWildcardProvider);
 
   function SourceAbstract(initialState, strategy) {
-    const self = this;
+    let self = this;
     self._instanceid = _.uniqueId('data_source');
 
     self._state = (function () {
@@ -83,7 +81,7 @@ export default function SourceAbstractFactory(Private, Promise, PromiseEmitter) 
    *   string of the state value to set
    */
   SourceAbstract.prototype.set = function (state, val) {
-    const self = this;
+    let self = this;
 
     if (typeof state === 'string') {
       // the getter and setter methods check for undefined explicitly
@@ -129,7 +127,7 @@ export default function SourceAbstractFactory(Private, Promise, PromiseEmitter) 
    * @return {Promise}
    */
   SourceAbstract.prototype.onResults = function (handler) {
-    const self = this;
+    let self = this;
 
     return new PromiseEmitter(function (resolve, reject) {
       const defer = Promise.defer();
@@ -153,7 +151,7 @@ export default function SourceAbstractFactory(Private, Promise, PromiseEmitter) 
    * @return {Promise}
    */
   SourceAbstract.prototype.onError = function (handler) {
-    const self = this;
+    let self = this;
 
     return new PromiseEmitter(function (resolve, reject) {
       const defer = Promise.defer();
@@ -176,7 +174,7 @@ export default function SourceAbstractFactory(Private, Promise, PromiseEmitter) 
    * @async
    */
   SourceAbstract.prototype.fetch = function () {
-    const self = this;
+    let self = this;
     let req = _.first(self._myStartableQueued());
 
     if (!req) {
@@ -185,7 +183,7 @@ export default function SourceAbstractFactory(Private, Promise, PromiseEmitter) 
 
     courierFetch.these([req]);
 
-    return req.getCompletePromise();
+    return req.defer.promise;
   };
 
   /**
@@ -236,13 +234,13 @@ export default function SourceAbstractFactory(Private, Promise, PromiseEmitter) 
    * @resolved {Object|null} - the flat state of the SourceAbstract
    */
   SourceAbstract.prototype._flatten = function () {
-    const type = this._getType();
+    let type = this._getType();
 
     // the merged state of this dataSource and it's ancestors
-    const flatState = {};
+    let flatState = {};
 
     // function used to write each property from each state object in the chain to flat state
-    const root = this;
+    let root = this;
 
     // start the chain at this source
     let current = this;
@@ -259,12 +257,12 @@ export default function SourceAbstractFactory(Private, Promise, PromiseEmitter) 
           });
         }
 
-        const prom = root._mergeProp(flatState, value, key);
+        let prom = root._mergeProp(flatState, value, key);
         return Promise.is(prom) ? prom : null;
       }))
       .then(function () {
         // move to this sources parent
-        const parent = current.getParent();
+        let parent = current.getParent();
         // keep calling until we reach the top parent
         if (parent) {
           current = parent;
@@ -275,7 +273,7 @@ export default function SourceAbstractFactory(Private, Promise, PromiseEmitter) 
     .then(function () {
       if (type === 'search') {
         // This is down here to prevent the circular dependency
-        const decorateQuery = Private(DecorateQueryProvider);
+        let decorateQuery = Private(DecorateQueryProvider);
 
         flatState.body = flatState.body || {};
 
@@ -287,7 +285,7 @@ export default function SourceAbstractFactory(Private, Promise, PromiseEmitter) 
         }
 
         if (flatState.body.size > 0) {
-          const computedFields = flatState.index.getComputedFields();
+          let computedFields = flatState.index.getComputedFields();
           flatState.body.stored_fields = computedFields.storedFields;
           flatState.body.script_fields = flatState.body.script_fields || {};
           flatState.body.docvalue_fields = flatState.body.docvalue_fields || [];
@@ -311,7 +309,7 @@ export default function SourceAbstractFactory(Private, Promise, PromiseEmitter) 
          *                          through otherwise it will filter out
          * @returns {function}
          */
-        const filterNegate = function (reverse) {
+        let filterNegate = function (reverse) {
           return function (filter) {
             if (_.isUndefined(filter.meta) || _.isUndefined(filter.meta.negate)) return !reverse;
             return filter.meta && filter.meta.negate === reverse;
@@ -323,7 +321,7 @@ export default function SourceAbstractFactory(Private, Promise, PromiseEmitter) 
         * @param  {Object} filter - The filter to translate
         * @return {Object} the query version of that filter
         */
-        const translateToQuery = function (filter) {
+        let translateToQuery = function (filter) {
           if (!filter) return;
 
           if (filter.query) {
@@ -338,7 +336,7 @@ export default function SourceAbstractFactory(Private, Promise, PromiseEmitter) 
          * @param {object} filter The filter to clean
          * @returns {object}
          */
-        const cleanFilter = function (filter) {
+        let cleanFilter = function (filter) {
           return _.omit(filter, ['meta']);
         };
 
@@ -373,13 +371,6 @@ export default function SourceAbstractFactory(Private, Promise, PromiseEmitter) 
           delete flatState.filters;
         }
 
-        if (flatState.highlightAll != null) {
-          if (flatState.highlightAll && flatState.body.query) {
-            flatState.body.highlight = getHighlightRequest(flatState.body.query);
-          }
-          delete flatState.highlightAll;
-        }
-
         // re-write filters within filter aggregations
         (function recurse(aggBranch) {
           if (!aggBranch) return;
@@ -405,4 +396,4 @@ export default function SourceAbstractFactory(Private, Promise, PromiseEmitter) 
   };
 
   return SourceAbstract;
-}
+};

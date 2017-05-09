@@ -4,16 +4,16 @@ import wrapRouteWithPrep from './wrap_route_with_prep';
 import RouteSetupManager from './route_setup_manager';
 
 function RouteManager() {
-  const self = this;
-  const setup = new RouteSetupManager();
-  const when = [];
-  const defaults = [];
+  let self = this;
+  let setup = new RouteSetupManager();
+  let when = [];
+  let defaults = [];
   let otherwise;
 
   self.config = function ($routeProvider) {
     when.forEach(function (args) {
-      const path = args[0];
-      const route = args[1] || {};
+      let path = args[0];
+      let route = args[1] || {};
 
       // merge in any defaults
       defaults.forEach(function (args) {
@@ -40,7 +40,7 @@ function RouteManager() {
     }
   };
 
-  const wrapSetupAndChain = (fn, ...args) => {
+  let wrapSetupAndChain = (fn, ...args) => {
     fn.apply(setup, args);
     return this;
   };

@@ -1,5 +1,6 @@
-import $ from 'jquery';
-import storage from './storage';
+const $ = require('jquery');
+const { uniq } = require('lodash');
+const storage = require('./storage');
 
 const history = module.exports = {
   restoreFromHistory() {
@@ -54,7 +55,7 @@ const history = module.exports = {
     return { time, content };
   },
 
-  clearHistory() {
+  clearHistory($el) {
     history
       .getHistoryKeys()
       .forEach(key => storage.delete(key));

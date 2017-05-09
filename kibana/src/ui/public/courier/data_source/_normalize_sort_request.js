@@ -1,7 +1,7 @@
 import _ from 'lodash';
 
 export default function normalizeSortRequest(config) {
-  const defaultSortOptions = config.get('sort:options');
+  let defaultSortOptions = config.get('sort:options');
 
   /**
    * Decorate queries with default parameters
@@ -9,6 +9,8 @@ export default function normalizeSortRequest(config) {
    * @returns {object}
    */
   return function (sortObject, indexPattern) {
+    let normalizedSort = [];
+
     // [].concat({}) -> [{}], [].concat([{}]) -> [{}]
     return [].concat(sortObject).map(function (sortable) {
       return normalize(sortable, indexPattern);
@@ -20,10 +22,10 @@ export default function normalizeSortRequest(config) {
     { someField: "desc" } into { someField: { "order": "desc"}}
   */
   function normalize(sortable, indexPattern) {
-    const normalized = {};
+    let normalized = {};
     let sortField = _.keys(sortable)[0];
     let sortValue = sortable[sortField];
-    const indexField = indexPattern.fields.byName[sortField];
+    let indexField = indexPattern.fields.byName[sortField];
 
     if (indexField && indexField.scripted && indexField.sortable) {
       let direction;
@@ -53,7 +55,7 @@ export default function normalizeSortRequest(config) {
     normalized[sortField] = sortValue;
     return normalized;
   }
-}
+};
 
 // The ES API only supports sort scripts of type 'number' and 'string'
 function castSortType(type) {

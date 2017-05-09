@@ -1,37 +1,32 @@
 'use strict';
 
-var _lodash = require('lodash');
-
-var _lodash2 = _interopRequireDefault(_lodash);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+var _ = require('lodash');
 
 // Downsampling of cummulative metrics
 // Good: count, sum
 // Bad: avg, min, max
-
 
 // For upsampling cummulative metrics (eg sum from 1M to 1d), could rename this scale.
 // Really only the 0s that screws this up, need to distribute contents of spikes to empty buckets
 // Empty is currently 0, which is not right
 
 function sum(set) {
-  return _lodash2.default.reduce(set, function (sum, num) {
+  return _.reduce(set, function (sum, num) {
     return sum + num;
   }, 0);
 }
 
 module.exports = function (dataTuples, targetTuples) {
 
-  let i = 0;
-  let j = 0;
-  let spreadCount = 0;
-  const result = [];
-  let bucket;
-  let time;
-  let scaleSet;
-  let step;
-  let nextRealNumber;
+  var i = 0;
+  var j = 0;
+  var spreadCount = 0;
+  var result = [];
+  var bucket;
+  var time;
+  var scaleSet;
+  var step;
+  var nextRealNumber;
 
   while (i < targetTuples.length) {
     scaleSet = [];
